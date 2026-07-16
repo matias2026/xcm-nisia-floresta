@@ -1,0 +1,184 @@
+const SUPABASE_URL = "https://gzrrevldyugacfdkqndh.supabase.co";
+const SUPABASE_KEY = "sb_publishable_zmTWWNEPcf2vy-oK4B9Xbg_LlL_B49w";
+
+const supabaseAdmin = window.supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_KEY
+);
+
+const loginArea = document.getElementById("loginArea");
+const adminArea = document.getElementById("adminArea");
+const tabelaBody = document.querySelector("#tabela tbody");
+
+let inscricoes = [];
+
+async function verificarSessao() {
+  const {
+    data: { session }
+  } = await supabaseAdmin.auth.getSession();
+
+  if (session) {
+    mostrarPainel();
+    await carregarInscricoes();
+  }
+}
+
+async function login() {
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value;
+
+  if (!email || !password) {
+    alert("Digite o e-mail e a senha.");
+    return;
+  }
+
+  const { error } = await supabaseAdmin.auth.signInWithPassword({
+    email,
+    password
+  });
+
+  if (error) {
+    console.error(error);
+    alert("E-mail ou senha incorretos.");
+    return;
+  }
+
+  mostrarPainel();
+  await carregarInscricoes();
+}
+
+function mostrarPainel() {
+  loginArea.style.display = "none";
+  adminArea.style.display = "block";
+}
+
+async function carregarInscricoes() {
+  tabelaBody.innerHTML =
+    '<tr><td colspan="5">Carregando inscrições...</td></tr>';
+
+  const { data, error } = await supabaseAdmin
+    .from("inscricoes")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error(error);
+    tabelaBody.innerHTML =
+      '<tr><td colspan="5">Erro ao carregar inscrições.</td></tr>';
+    return;
+  }
+
+  inscricoes = data || [];
+  renderizarTabela();
+}
+
+function renderizarTabela() {
+  tabelaBody.innerHTML = "";
+
+  if (!inscricoes.length) {
+    tabelaBody.innerHTML =
+      '<tr><td colspan="5">Nenhuma inscrição encontrada.</td></tr>';
+    return;
+  }
+
+  inscricoes.forEach(inscricao => {
+    const linha = document.createElement("tr");
+
+    linha.innerHTML = `
+      <td>${escaparHTML(inscricao.codigo_inscricao || "")}</td>
+      <td>${escaparHTML(inscricao.nome || "")}</td>
+      <td>${escaparHTML(inscricao.cpf || "")}</td>
+      <td>${escaparHTML(inscricao.categoria || "")}</td>
+      <td>${escaparHTML(inscricao.status || "pendente")}</td>
+    `;
+
+    tabelaBody.appendChild(linha);
+  });
+}
+
+function exportarCSV() {
+  if (!inscricoes.length) {
+    alert("Não existem inscrições para exportar.");
+    return;
+  }
+
+  const dadosExcel = inscricoes.map(inscricao => ({
+    "Código": inscricao.codigo_inscricao || "",
+    "Nome": inscricao.nome || "",
+    "CPF": inscricao.cpf || "",
+    "Nascimento": inscricao.nascimento || "",
+    "Telefone": inscricao.telefone || "",
+    "E-mail": inscricao.email || "",
+    "Cidade": inscricao.cidade || "",
+    "Equipe": inscricao.equipe || "",
+    "Categoria": inscricao.categoria || "",
+    "Instagram": inscricao.instagram || "",
+    "Camisa": inscricao.camisa || "",
+    "Pagamento": inscricao.pagamento || "",
+    "Status": inscricao.status || "",
+    "Data da inscrição": formatarData(inscricao.created_at)
+  }));
+
+  const planilha = XLSX.utils.json_to_sheet(dadosExcel);
+  const arquivo = XLSX.utils.book_new();
+
+  XLSX.utils.book_append_sheet(
+    arquivo,
+    planilha,
+    "Inscritos"
+  );
+
+  XLSX.writeFile(
+    arquivo,
+    `inscritos-xcm-${new Date().toISOString().slice(0, 10)}.xlsx`
+  );
+}
+
+function formatarData(data) {
+  if (!data) return "";
+
+  return new Date(data).toLocaleString("pt-BR");
+}
+
+function escaparHTML(valor) {
+  return String(valor)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+verificarSessao();
+document.getElementById("exportExcel").addEventListener("click", () => {
+  if (!inscricoes.length) {
+    alert("Nenhuma inscrição encontrada.");
+    return;
+  }
+
+  const dados = inscricoes.map(i => ({
+    Código: i.codigo_inscricao,
+    Nome: i.nome,
+    CPF: i.cpf,
+    Nascimento: i.nascimento,
+    Telefone: i.telefone,
+    Email: i.email,
+    Cidade: i.cidade,
+    Equipe: i.equipe,
+    Categoria: i.categoria,
+    Instagram: i.instagram,
+    Pagamento: i.pagamento,
+    Status: i.status,
+    Data: i.criado_em
+  }));
+
+  const ws = XLSX.utils.json_to_sheet(dados);
+  const wb = XLSX.utils.book_new();
+
+  XLSX.utils.book_append_sheet(wb, ws, "Inscritos");
+
+  XLSX.writeFile(
+    wb,
+    `Inscritos_XCM_${new Date().toISOString().slice(0,10)}.xlsx`
+  );
+});
