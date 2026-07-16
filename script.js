@@ -136,9 +136,6 @@ form.addEventListener("submit", async event => {
     const formData = new FormData(form);
     const payment = formData.get("pagamento");
 
-    if (payment === "pix" && !receipt.files.length) {
-      throw new Error("Envie o comprovante do Pix para continuar.");
-    }
 
     const registrationCode =
       "XCM27-" + String(Date.now()).slice(-6);
