@@ -1,4 +1,10 @@
-const topbar = document.querySelector(".topbar");
+const SUPABASE_URL = "https://gzrrevldyugacfdkqndh.supabase.co";
+const SUPABASE_KEY = "sb_publishable_zmTWWNEPcf2vy-oK4B9Xbg_LlL_B49w";
+
+const supabaseClient = window.supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_KEY
+);const topbar = document.querySelector(".topbar");
 const menuToggle = document.getElementById("menuToggle");
 const navLinks = document.getElementById("navLinks");
 
@@ -114,50 +120,91 @@ document.getElementById("telefone").addEventListener("input", event => {
   event.target.value = value;
 });
 
-form.addEventListener("submit", event => {
+form.addEventListener("submit", async event => {
   event.preventDefault();
+
   formStatus.className = "form-status";
-  formStatus.textContent = "";
+  formStatus.textContent = "Enviando inscrição...";
 
-  const formData = new FormData(form);
-  const payment = formData.get("pagamento");
+  const submitButton = form.querySelector('button[type="submit"]');
 
-  if (payment === "pix" && !receipt.files.length) {
+  if (submitButton) {
+    submitButton.disabled = true;
+  }
+
+  try {
+    const formData = new FormData(form);
+    const payment = formData.get("pagamento");
+
+    if (payment === "pix" && !receipt.files.length) {
+      throw new Error("Envie o comprovante do Pix para continuar.");
+    }
+
+    const registrationCode =
+      "XCM27-" + String(Date.now()).slice(-6);
+
+    const novaInscricao = {
+      codigo_inscricao: registrationCode,
+      nome: formData.get("nome"),
+      cpf: formData.get("cpf"),
+      nascimento: formData.get("nascimento") || null,
+      telefone: formData.get("telefone"),
+      email: formData.get("email") || null,
+      cidade: formData.get("cidade"),
+      equipe: formData.get("equipe") || "Sem equipe",
+      categoria: formData.get("categoria"),
+      instagram: formData.get("instagram") || null,
+      pagamento: payment,
+      comprovante: null,
+      camisa: formData.get("camisa") || null,
+      status: "pendente"
+    };
+
+    const { error } = await supabaseClient
+      .from("inscricoes")
+      .insert([novaInscricao]);
+
+    if (error) {
+      console.error("Erro do Supabase:", error);
+      throw new Error("Não foi possível salvar a inscrição.");
+    }
+
+    if (payment === "cartao") {
+      const whatsappNumber = "5584000000000";
+
+      const message = encodeURIComponent(
+        `Olá! Realizei minha inscrição no XCM Nísia Floresta 2027.\n` +
+        `Nome: ${novaInscricao.nome}\n` +
+        `Categoria: ${novaInscricao.categoria}\n` +
+        `Código: ${registrationCode}\n` +
+        `Gostaria de receber o link para pagamento no cartão.`
+      );
+
+      window.open(
+        `https://wa.me/${whatsappNumber}?text=${message}`,
+        "_blank"
+      );
+    }
+
+    formStatus.classList.add("success");
+    formStatus.textContent =
+      `Inscrição salva! Código: ${registrationCode}. ` +
+      `Status: aguardando confirmação.`;
+
+    form.reset();
+    pixPanel.classList.remove("hidden");
+    cardPanel.classList.add("hidden");
+    fileName.textContent = "Selecionar JPG, PNG ou PDF";
+
+  } catch (error) {
+    console.error("Erro na inscrição:", error);
+
     formStatus.classList.add("error");
-    formStatus.textContent = "Envie o comprovante do Pix para continuar.";
-    return;
+    formStatus.textContent =
+      error.message || "Não foi possível enviar a inscrição.";
+  } finally {
+    if (submitButton) {
+      submitButton.disabled = false;
+    }
   }
-
-  const registrationCode = "XCM27-" + String(Date.now()).slice(-6);
-  const record = {
-    codigo: registrationCode,
-    nome: formData.get("nome"),
-    categoria: formData.get("categoria"),
-    pagamento: payment,
-    status: "Pendente"
-  };
-
-  const saved = JSON.parse(localStorage.getItem("xcmInscricoesDemo") || "[]");
-  saved.push(record);
-  localStorage.setItem("xcmInscricoesDemo", JSON.stringify(saved));
-
-  if (payment === "cartao") {
-    const whatsappNumber = "5584000000000";
-    const message = encodeURIComponent(
-      `Olá! Realizei minha inscrição no XCM Nísia Floresta 2027.\n` +
-      `Nome: ${formData.get("nome")}\n` +
-      `Categoria: ${formData.get("categoria")}\n` +
-      `Código: ${registrationCode}\n` +
-      `Gostaria de receber o link para pagamento no cartão.`
-    );
-    window.open(`https://wa.me/${whatsappNumber}?text=${message}`, "_blank");
-  }
-
-  formStatus.classList.add("success");
-  formStatus.textContent = `Inscrição recebida! Código: ${registrationCode}. Status: aguardando confirmação.`;
-
-  form.reset();
-  pixPanel.classList.remove("hidden");
-  cardPanel.classList.add("hidden");
-  fileName.textContent = "Selecionar JPG, PNG ou PDF";
 });
