@@ -181,4 +181,16 @@ document.getElementById("exportExcel").addEventListener("click", () => {
     wb,
     `Inscritos_XCM_${new Date().toISOString().slice(0,10)}.xlsx`
   );
-});
+});async function logout() {
+  const { error } = await supabaseAdmin.auth.signOut();
+
+  if (error) {
+    console.error(error);
+    alert("Não foi possível sair.");
+    return;
+  }
+
+  adminArea.style.display = "none";
+  loginArea.style.display = "block";
+  tabelaBody.innerHTML = "";
+}
