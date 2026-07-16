@@ -216,6 +216,7 @@ if (receipt.files.length) {
 
   } catch (error) {
     console.error("Erro na inscrição:", error);
+    alert(error?.message || JSON.stringify(error));
 
     formStatus.classList.add("error");
     formStatus.textContent =
