@@ -130,7 +130,7 @@ function exportarCSV() {
     "Equipe": inscricao.equipe || "",
     "Categoria": inscricao.categoria || "",
     "Instagram": inscricao.instagram || "",
-    "Camisa": inscricao.camisa || "",
+    "Licença CBC": inscricao.licenca_cbc || "",
     "Pagamento": inscricao.pagamento || "",
     "Status": inscricao.status || "",
     "Data da inscrição": formatarData(inscricao.created_at)

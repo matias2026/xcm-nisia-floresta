@@ -153,7 +153,7 @@ form.addEventListener("submit", async event => {
       instagram: formData.get("instagram") || null,
       pagamento: payment,
       comprovante: null,
-      camisa: formData.get("camisa") || null,
+      licenca_cbc: formData.get("licenca_cbc") || null,
       status: "pendente"
     };
 
