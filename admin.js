@@ -89,7 +89,24 @@ function renderizarTabela() {
       <td>${escaparHTML(inscricao.nome || "")}</td>
       <td>${escaparHTML(inscricao.cpf || "")}</td>
       <td>${escaparHTML(inscricao.categoria || "")}</td>
-      <td>${escaparHTML(inscricao.status || "pendente")}</td>
+      <td>
+  <div class="status-actions">
+    <span class="status-badge status-${inscricao.status || "pendente"}">
+      ${escaparHTML(inscricao.status || "pendente")}
+    </span>
+
+    <select
+      class="status-select"
+      onchange="alterarStatus(${inscricao.id}, this.value)"
+    >
+      <option value="">Alterar</option>
+      <option value="pendente">Pendente</option>
+      <option value="pago">Pago</option>
+      <option value="cancelado">Cancelado</option>
+      <option value="cortesia">Cortesia</option>
+    </select>
+  </div>
+</td>
     `;
 
     tabelaBody.appendChild(linha);
@@ -147,41 +164,35 @@ function escaparHTML(valor) {
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
-}
+}async function alterarStatus(id, novoStatus) {
+  if (!novoStatus) return;
 
-verificarSessao();
-document.getElementById("exportExcel").addEventListener("click", () => {
-  if (!inscricoes.length) {
-    alert("Nenhuma inscrição encontrada.");
+  const confirmar = window.confirm(
+    `Deseja alterar o status para "${novoStatus}"?`
+  );
+
+  if (!confirmar) {
+    await carregarInscricoes();
     return;
   }
 
-  const dados = inscricoes.map(i => ({
-    Código: i.codigo_inscricao,
-    Nome: i.nome,
-    CPF: i.cpf,
-    Nascimento: i.nascimento,
-    Telefone: i.telefone,
-    Email: i.email,
-    Cidade: i.cidade,
-    Equipe: i.equipe,
-    Categoria: i.categoria,
-    Instagram: i.instagram,
-    Pagamento: i.pagamento,
-    Status: i.status,
-    Data: i.criado_em
-  }));
+  const { error } = await supabaseAdmin
+    .from("inscricoes")
+    .update({ status: novoStatus })
+    .eq("id", id);
 
-  const ws = XLSX.utils.json_to_sheet(dados);
-  const wb = XLSX.utils.book_new();
+  if (error) {
+    console.error("Erro ao atualizar status:", error);
+    alert("Não foi possível atualizar o status.");
+    await carregarInscricoes();
+    return;
+  }
 
-  XLSX.utils.book_append_sheet(wb, ws, "Inscritos");
+  await carregarInscricoes();
+}
 
-  XLSX.writeFile(
-    wb,
-    `Inscritos_XCM_${new Date().toISOString().slice(0,10)}.xlsx`
-  );
-});async function logout() {
+verificarSessao();
+async function logout() {
   const { error } = await supabaseAdmin.auth.signOut();
 
   if (error) {
@@ -190,7 +201,11 @@ document.getElementById("exportExcel").addEventListener("click", () => {
     return;
   }
 
+  document.getElementById("email").value = "";
+  document.getElementById("password").value = "";
+
   adminArea.style.display = "none";
   loginArea.style.display = "block";
   tabelaBody.innerHTML = "";
+  inscricoes = [];
 }
