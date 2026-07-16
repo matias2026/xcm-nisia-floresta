@@ -146,22 +146,33 @@ const arquivo = document.getElementById("receipt")?.files?.[0];
 console.log("Arquivo selecionado:", arquivo);
 
 if (arquivo) {
-  const extensao = arquivo.name.split(".").pop().toLowerCase();
-  const nomeArquivo = `${registrationCode}-${Date.now()}.${extensao}`;
 
-  const { error: uploadError } = await supabaseClient.storage
-    .from("Comprovante")
-    .upload(nomeArquivo, arquivo, {
-      contentType: arquivo.type,
-      upsert: false
-    });
+  const extensao = arquivo.name.split(".").pop().toLowerCase();
+
+  const nomeArquivo =
+    `${registrationCode}-${Date.now()}.${extensao}`;
+
+  const { data: uploadData, error: uploadError } =
+    await supabaseClient.storage
+      .from("Comprovante")
+      .upload(nomeArquivo, arquivo, {
+        contentType: arquivo.type,
+        upsert: false
+      });
 
   if (uploadError) {
     console.error("Erro no upload:", uploadError);
-    throw new Error(`Erro ao enviar comprovante: ${uploadError.message}`);
+    throw new Error(
+      `Erro ao enviar comprovante: ${uploadError.message}`
+    );
   }
 
-  caminhoComprovante = nomeArquivo;
+  caminhoComprovante = uploadData.path;
+
+  console.log(
+    "Comprovante enviado:",
+    caminhoComprovante
+  );
 }
 
     const novaInscricao = {
@@ -219,7 +230,6 @@ if (arquivo) {
 
   } catch (error) {
     console.error("Erro na inscrição:", error);
-    alert(error?.message || JSON.stringify(error));
 
     formStatus.classList.add("error");
     formStatus.textContent =
