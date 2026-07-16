@@ -141,8 +141,11 @@ form.addEventListener("submit", async event => {
       "XCM27-" + String(Date.now()).slice(-6);
       let caminhoComprovante = null;
 
-if (receipt.files.length) {
-  const arquivo = receipt.files[0];
+const arquivo = document.getElementById("receipt")?.files?.[0];
+
+console.log("Arquivo selecionado:", arquivo);
+
+if (arquivo) {
   const extensao = arquivo.name.split(".").pop().toLowerCase();
   const nomeArquivo = `${registrationCode}-${Date.now()}.${extensao}`;
 
