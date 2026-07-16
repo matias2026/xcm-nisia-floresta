@@ -139,6 +139,27 @@ form.addEventListener("submit", async event => {
 
     const registrationCode =
       "XCM27-" + String(Date.now()).slice(-6);
+      let caminhoComprovante = null;
+
+if (receipt.files.length) {
+  const arquivo = receipt.files[0];
+  const extensao = arquivo.name.split(".").pop().toLowerCase();
+  const nomeArquivo = `${registrationCode}-${Date.now()}.${extensao}`;
+
+  const { error: uploadError } = await supabaseClient.storage
+    .from("Comprovante")
+    .upload(nomeArquivo, arquivo, {
+      contentType: arquivo.type,
+      upsert: false
+    });
+
+  if (uploadError) {
+    console.error("Erro no upload:", uploadError);
+    throw new Error(`Erro ao enviar comprovante: ${uploadError.message}`);
+  }
+
+  caminhoComprovante = nomeArquivo;
+}
 
     const novaInscricao = {
       codigo_inscricao: registrationCode,
@@ -152,7 +173,7 @@ form.addEventListener("submit", async event => {
       categoria: formData.get("categoria"),
       instagram: formData.get("instagram") || null,
       pagamento: payment,
-      comprovante: null,
+      comprovante: caminhoComprovante,
       licenca_cbc: formData.get("licenca_cbc") || null,
       status: "pendente"
     };
