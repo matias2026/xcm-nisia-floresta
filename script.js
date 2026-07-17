@@ -94,14 +94,23 @@ receipt.addEventListener("change", () => {
   fileName.textContent = receipt.files[0]?.name || "Selecionar JPG, PNG ou PDF";
 });
 
-document.getElementById("copyPix").addEventListener("click", async () => {
+document.getElementById("copyPix").addEventListener("click", async event => {
+  event.preventDefault();
+  event.stopPropagation();
+
   const key = document.getElementById("pixKey").textContent.trim();
+  const button = event.currentTarget;
+
   try {
     await navigator.clipboard.writeText(key);
-    document.getElementById("copyPix").textContent = "Copiado!";
-    setTimeout(() => document.getElementById("copyPix").textContent = "Copiar chave", 1500);
-  } catch {
-    alert("Selecione e copie a chave Pix manualmente.");
+    button.textContent = "Copiado!";
+
+    setTimeout(() => {
+      button.textContent = "Copiar chave";
+    }, 1500);
+  } catch (error) {
+    console.error("Erro ao copiar chave Pix:", error);
+    alert("Não foi possível copiar automaticamente.");
   }
 });
 
