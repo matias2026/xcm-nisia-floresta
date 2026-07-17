@@ -54,7 +54,7 @@ function mostrarPainel() {
 
 async function carregarInscricoes() {
   tabelaBody.innerHTML =
-    '<tr><td colspan="5">Carregando inscrições...</td></tr>';
+    '<tr><td colspan="6">Carregando inscrições...</td></tr>';
 
   const { data, error } = await supabaseAdmin
     .from("inscricoes")
@@ -90,6 +90,19 @@ function renderizarTabela() {
       <td>${escaparHTML(inscricao.cpf || "")}</td>
       <td>${escaparHTML(inscricao.categoria || "")}</td>
       <td>
+  ${
+    inscricao.comprovante
+      ? `<button
+           type="button"
+           class="btn-comprovante"
+           onclick="abrirComprovante('${escaparHTML(inscricao.comprovante)}')"
+         >
+           Ver
+         </button>`
+      : `<span>Sem arquivo</span>`
+  }
+</td>
+      <td>
   <div class="status-actions">
     <span class="status-badge status-${inscricao.status || "pendente"}">
       ${escaparHTML(inscricao.status || "pendente")}
@@ -111,6 +124,18 @@ function renderizarTabela() {
 
     tabelaBody.appendChild(linha);
   });
+} async function abrirComprovante(caminho) {
+  const { data, error } = await supabaseAdmin.storage
+    .from("Comprovante")
+    .createSignedUrl(caminho, 60);
+
+  if (error) {
+    console.error("Erro ao abrir comprovante:", error);
+    alert("Não foi possível abrir o comprovante.");
+    return;
+  }
+
+  window.open(data.signedUrl, "_blank");
 }
 
 function exportarCSV() {
@@ -130,7 +155,7 @@ function exportarCSV() {
     "Equipe": inscricao.equipe || "",
     "Categoria": inscricao.categoria || "",
     "Instagram": inscricao.instagram || "",
-    "Licença CBC": inscricao.licenca_cbc || "",
+    "Camisa": inscricao.camisa || "",
     "Pagamento": inscricao.pagamento || "",
     "Status": inscricao.status || "",
     "Data da inscrição": formatarData(inscricao.created_at)
