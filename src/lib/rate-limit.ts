@@ -1,20 +1,20 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 
-// Rate limit por IP usando o próprio Postgres do Supabase (função
-// check_rate_limit, ver supabase/migrations/0006_rate_limit_via_postgres.sql)
-// — nenhum serviço externo novo, roda no mesmo banco que o app já usa. Um
-// Map em memória não serve porque a Vercel roda cada requisição numa
-// instância serverless separada; o banco é o único estado compartilhado.
+// Per-IP rate limit using Supabase's own Postgres (the check_rate_limit
+// function, see supabase/migrations/0006_rate_limit_via_postgres.sql) — no
+// new external service, runs on the same database the app already uses. An
+// in-memory Map won't work because Vercel runs each request on a separate
+// serverless instance; the database is the only shared state.
 type LimiterName = "login" | "api" | "access_request";
 
 const WINDOWS: Record<LimiterName, { windowSeconds: number; max: number }> = {
-  // Login: 5 tentativas a cada 5 minutos por IP — protege contra força
-  // bruta sem travar alguém que errou a senha uma ou duas vezes.
+  // Login: 5 attempts every 5 minutes per IP — protects against brute
+  // force without locking out someone who mistyped their password once or twice.
   login: { windowSeconds: 300, max: 5 },
-  // Demais rotas de API (ex.: geração de feedback com IA): 30 req/min por IP.
+  // Other API routes (e.g. AI feedback generation): 30 req/min per IP.
   api: { windowSeconds: 60, max: 30 },
-  // Pedido de acesso (tela pública, sem login): 3 por hora por IP — é o
-  // formulário mais exposto a spam/bot do site.
+  // Access request (public screen, no login): 3 per hour per IP — this is
+  // the form most exposed to spam/bots on the site.
   access_request: { windowSeconds: 3600, max: 3 },
 };
 
@@ -33,8 +33,8 @@ export async function checkRateLimit(name: LimiterName, identifier: string): Pro
   });
 
   if (error) {
-    // Se o banco estiver fora do ar, não é motivo pra derrubar login/API —
-    // loga e deixa passar (falha aberta), a checagem de auth continua valendo.
+    // If the database is down, that's no reason to break login/API —
+    // log it and let the request through (fail open); the auth check still applies.
     console.error("[rate-limit] falha ao checar limite, permitindo por padrão:", error.message);
     return { success: true };
   }
@@ -42,9 +42,9 @@ export async function checkRateLimit(name: LimiterName, identifier: string): Pro
   return { success: data === true };
 }
 
-// Extrai o IP real do cliente a partir dos headers que a Vercel injeta
-// (x-forwarded-for pode trazer uma lista "cliente, proxy1, proxy2" — o
-// primeiro item é o cliente original).
+// Extracts the client's real IP from the headers Vercel injects
+// (x-forwarded-for may carry a list "client, proxy1, proxy2" — the
+// first item is the original client).
 export function getClientIp(headers: Headers): string {
   const forwardedFor = headers.get("x-forwarded-for");
   if (forwardedFor) {

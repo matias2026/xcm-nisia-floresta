@@ -13,7 +13,7 @@ interface StatusDotProps {
   className?: string;
 }
 
-// Semáforo de cumprimento de treino usado na Home do atleta e no Cockpit do treinador.
+// Workout-completion traffic light used on the athlete's Home and the coach's Cockpit.
 export function StatusDot({ status, showLabel = true, className }: StatusDotProps) {
   const config = statusConfig[status];
 

@@ -48,9 +48,9 @@ export function paceOrSpeedValue(
 }
 
 /**
- * Ritmo (corrida, min/km) ou velocidade média (ciclismo, km/h), calculado a
- * partir de distância e duração. Retorna "—" quando a modalidade não usa
- * essa métrica (ex.: academia) ou faltam dados.
+ * Pace (running, min/km) or average speed (cycling, km/h), computed from
+ * distance and duration. Returns "—" when the discipline doesn't use this
+ * metric (e.g. strength training) or data is missing.
  */
 export function formatPaceOrSpeed(
   discipline: string,
@@ -78,10 +78,10 @@ export type PlanComparison = "match" | "off" | "none";
 const DEFAULT_TOLERANCE_PCT = 10;
 
 /**
- * Compara um valor concluído contra o planejado dentro de uma tolerância —
- * "match" (dentro do esperado, exibido em azul), "off" (fora do esperado,
- * vermelho) ou "none" (falta dado suficiente, ex.: treino ainda não
- * concluído — cor neutra).
+ * Compares a completed value against the planned one within a tolerance —
+ * "match" (within expectations, shown in blue), "off" (outside expectations,
+ * red), or "none" (not enough data, e.g. workout not yet completed —
+ * neutral color).
  */
 export function compareToPlanned(
   planned: number | null | undefined,

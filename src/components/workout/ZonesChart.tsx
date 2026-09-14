@@ -14,9 +14,9 @@ interface ZonesChartProps {
   data: ZoneDatum[];
 }
 
-// Cor da barra "Concluído" conforme a comparação com o planejado: azul
-// dentro da tolerância, vermelho fora do esperado. A barra "Planejado" é
-// sempre neutra — é a referência, não o resultado.
+// "Completed" bar color based on comparison with the planned value: blue
+// within tolerance, red outside expectations. The "Planned" bar is
+// always neutral — it's the reference, not the result.
 const COMPARISON_BAR_CLASS: Record<PlanComparison, string> = {
   match: "bg-blue-500",
   off: "bg-red-500",
@@ -24,9 +24,9 @@ const COMPARISON_BAR_CLASS: Record<PlanComparison, string> = {
 };
 
 /**
- * Tempo em zona, planejado vs. concluído. A barra "Concluído" é colorida
- * pela correção em relação ao planejado (azul = dentro do esperado,
- * vermelho = fora), não mais por um tom decorativo fixo.
+ * Time in zone, planned vs. completed. The "Completed" bar is colored by
+ * how correct it is relative to the plan (blue = within expectations,
+ * red = outside), no longer by a fixed decorative tone.
  */
 export function ZonesChart({ title, data }: ZonesChartProps) {
   const maxMinutes = Math.max(1, ...data.flatMap((d) => [d.plannedMinutes, d.completedMinutes]));

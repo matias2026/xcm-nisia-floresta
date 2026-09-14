@@ -23,10 +23,10 @@ interface AthleteWorkoutViewProps {
 }
 
 /**
- * Visão do atleta: Treino do Dia + Ações (exportar, concluir, tutorial de
- * dispositivo) + Feedback do Professor, tudo em um fluxo único — sem cards
- * soltos e desconectados. TODO: persistir a conclusão em workout_completions
- * via Supabase quando o projeto estiver conectado (hoje só atualiza a tela).
+ * Athlete's view: Today's Workout + Actions (export, complete, device
+ * tutorial) + Coach Feedback, all in a single flow — no loose,
+ * disconnected cards. TODO: persist completion to workout_completions
+ * via Supabase once the project is connected (today it only updates the screen).
  */
 export function AthleteWorkoutView({ workout }: AthleteWorkoutViewProps) {
   const [status, setStatus] = useState(workout.status);

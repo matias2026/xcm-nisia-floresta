@@ -1,9 +1,9 @@
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "./types";
 
-// Cliente com service role, exclusivo para uso em Route Handlers de servidor
-// (ex.: troca de tokens do Strava, sincronização de atividades). NUNCA importe
-// este arquivo em código que roda no navegador.
+// Service-role client, exclusively for use in server Route Handlers
+// (e.g. Strava token exchange, activity sync). NEVER import this file in
+// code that runs in the browser.
 export function createAdminClient() {
   return createSupabaseClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,

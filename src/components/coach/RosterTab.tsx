@@ -24,10 +24,10 @@ function formatFtp(student: MockStudent): string {
 }
 
 /**
- * Aba "Alunos cadastrados": a lista geral de alunos gerenciados (FTP/W-kg,
- * peso, modalidade, status do dia) com o cadastro de um novo aluno (modal
- * completo em AddStudentModal). Fica em memória (useState no CockpitTabs)
- * até a persistência real via Supabase.
+ * "Registered students" tab: the general list of managed students
+ * (FTP/W-kg, weight, discipline, day's status) with registration of a new
+ * student (full modal in AddStudentModal). Lives in memory (useState in
+ * CockpitTabs) until real persistence via Supabase.
  */
 export function RosterTab({ students, onAddStudent }: RosterTabProps) {
   const [showForm, setShowForm] = useState(false);

@@ -21,9 +21,9 @@ const fieldClass =
 const labelClass = "text-xs font-medium text-g4-muted";
 
 /**
- * Aba "Analisar treino do aluno": o painel analítico estilo TrainingPeaks —
- * Planejado vs. Concluído, gráfico de blocos, zonas de potência/FC e o
- * composer de feedback com IA.
+ * "Analyze student workout" tab: the TrainingPeaks-style analytical panel —
+ * Planned vs. Completed, block chart, power/HR zones, and the
+ * AI feedback composer.
  */
 export function AnalyzeTab({ students, workouts, selectedStudentId, onSelectStudent }: AnalyzeTabProps) {
   const student = students.find((s) => s.id === selectedStudentId) ?? students[0];

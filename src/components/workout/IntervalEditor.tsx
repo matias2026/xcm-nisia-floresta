@@ -14,9 +14,9 @@ export const TYPE_LABELS: Record<WorkoutIntervalType, string> = {
   cooldown: "Desaquecimento",
 };
 
-// Zonas de intensidade por %FTP (padrão Coggan) — as mesmas faixas e nomes
-// usados no gráfico de zonas (ZonesChart), para o número bater com o rótulo
-// em vez de aparecer solto na linha.
+// Intensity zones by %FTP (Coggan standard) — the same ranges and names
+// used in the zones chart (ZonesChart), so the number matches the label
+// instead of showing up on its own.
 export const ZONES = [
   { key: "Z1", label: "Recuperação", low: 0, high: 55 },
   { key: "Z2", label: "Resistência", low: 56, high: 75 },
@@ -42,13 +42,13 @@ const EMPTY_INTERVAL: WorkoutInterval = {
 };
 
 /**
- * Editor dos blocos estruturados por %FTP/zona (aquecimento, tiros,
- * recuperação, desaquecimento) — a mesma lista que alimenta o export .ZWO
- * (`src/lib/workout-export.ts`), então só aparece para ciclismo. Cada linha
- * é um segmento independente; a duração aqui é sempre em minutos. A zona
- * (Z1–Z5) é derivada do %FTP máximo do bloco — escolher uma zona ajusta a
- * faixa de %FTP automaticamente, e editar o %FTP direto atualiza a zona
- * exibida, sem dois estados para manter sincronizados.
+ * Editor for the structured %FTP/zone blocks (warmup, intervals,
+ * recovery, cooldown) — the same list that feeds the .ZWO export
+ * (`src/lib/workout-export.ts`), so it only shows up for cycling. Each row
+ * is an independent segment; duration here is always in minutes. The zone
+ * (Z1–Z5) is derived from the block's max %FTP — picking a zone adjusts
+ * the %FTP range automatically, and editing the %FTP directly updates the
+ * displayed zone, so there are no two states to keep in sync.
  */
 export function IntervalEditor({ intervals, onChange }: IntervalEditorProps) {
   function updateRow(index: number, patch: Partial<WorkoutInterval>) {

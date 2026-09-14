@@ -12,9 +12,9 @@ function initials(name: string): string {
   return (first + last).toUpperCase();
 }
 
-// Avatar com as iniciais do nome, acento verde G4 — usado no lugar de foto
-// (não temos upload de imagem) para dar identidade visual a cada aluno no
-// cockpit, em vez de uma linha de texto genérica.
+// Avatar with the name's initials, G4 green accent — used in place of a
+// photo (there's no image upload) to give each student visual identity in
+// the cockpit, instead of a generic text row.
 export function Avatar({ name, className }: AvatarProps) {
   return (
     <span

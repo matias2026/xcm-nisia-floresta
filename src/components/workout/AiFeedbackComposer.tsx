@@ -10,10 +10,10 @@ interface AiFeedbackComposerProps {
   initialValue: string;
 }
 
-// Composer do treinador: gera um rascunho com IA (Gemini), permite editar
-// e "enviar" — o texto final é o que aparece como Feedback do Professor
-// para o atleta. TODO: persistir em workout_completions.coach_feedback via
-// Supabase quando o projeto estiver conectado (hoje só atualiza a tela).
+// Coach's composer: generates an AI (Gemini) draft, lets it be edited
+// and "sent" — the final text is what shows up as Coach Feedback for
+// the athlete. TODO: persist to workout_completions.coach_feedback via
+// Supabase once the project is connected (today it only updates the screen).
 export function AiFeedbackComposer({ draftInput, initialValue }: AiFeedbackComposerProps) {
   const [text, setText] = useState(initialValue);
   const [loading, setLoading] = useState(false);

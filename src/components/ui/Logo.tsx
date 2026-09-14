@@ -5,8 +5,8 @@ interface LogoProps {
   className?: string;
 }
 
-// Marca G4 (sem o detalhe do haltere) para uso compacto em cabeçalhos —
-// extraída do material de marca em public/logo-g4-icon.png.
+// G4 mark (without the dumbbell detail) for compact use in headers —
+// extracted from the brand material in public/logo-g4-icon.png.
 export function Logo({ className }: LogoProps) {
   return (
     <Image

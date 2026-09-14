@@ -23,10 +23,10 @@ const TABS: { key: TabKey; label: string }[] = [
 ];
 
 /**
- * Shell do Cockpit do treinador: mantém o cadastro de alunos e as
- * prescrições em memória (useState) e distribui as funcionalidades em 4
- * abas, em vez de uma tela única com tudo misturado. TODO: substituir o
- * estado local por consultas/mutations reais via Supabase.
+ * Coach Cockpit shell: keeps the student roster and prescriptions in
+ * memory (useState) and spreads functionality across 4 tabs, instead of
+ * a single screen with everything mixed together. TODO: replace the
+ * local state with real queries/mutations via Supabase.
  */
 export function CockpitTabs({ initialStudents, initialWorkouts }: CockpitTabsProps) {
   const [students, setStudents] = useState<MockStudent[]>(initialStudents);

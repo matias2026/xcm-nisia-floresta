@@ -21,8 +21,8 @@ async function requireAdmin(): Promise<string> {
   if (!user) throw new Error("Não autenticado.");
 
   const { data } = await supabase.from("profiles").select("role, active").eq("id", user.id).single();
-  // O generic da tabela via @supabase/ssr não propaga o tipo da coluna aqui;
-  // o shape é conhecido (profiles.role/active) então a asserção é segura.
+  // The table generic via @supabase/ssr doesn't propagate the column type
+  // here; the shape is known (profiles.role/active) so the assertion is safe.
   const profile = data as { role: ProfileRole; active: boolean } | null;
   if (profile?.role !== "admin" || !profile.active) throw new Error("Acesso restrito ao administrador.");
   return user.id;
@@ -37,11 +37,11 @@ interface CreateAccountInput {
   role: ProfileRole;
 }
 
-// Lógica compartilhada por "Criar conta" (formulário direto) e "Aprovar"
-// (pedido de acesso). A trava de 50 atletas é reforçada duas vezes: aqui
-// (pré-checagem, pra não criar um usuário órfão no Auth à toa) e no banco
-// (trigger enforce_athlete_cap, que vale de verdade mesmo se alguém pular
-// esta função e inserir direto via SQL/service role).
+// Logic shared by "Create account" (direct form) and "Approve"
+// (access request). The 50-athlete cap is enforced twice: here
+// (pre-check, so we don't create an orphaned Auth user for nothing) and
+// in the database (the enforce_athlete_cap trigger, which really holds
+// even if someone bypasses this function and inserts directly via SQL/service role).
 async function createAccountCore({ email, password, fullName, role }: CreateAccountInput): Promise<string | null> {
   if (!email || !password || !fullName) return "Preencha nome, e-mail e senha.";
   if (password.length < 8) return "A senha precisa ter pelo menos 8 caracteres.";
@@ -67,7 +67,7 @@ async function createAccountCore({ email, password, fullName, role }: CreateAcco
     .insert({ id: created.user.id, role, full_name: fullName });
 
   if (profileError) {
-    // Reverte o usuário do Auth pra não deixar login órfão sem perfil.
+    // Rolls back the Auth user so we don't leave an orphaned login without a profile.
     await admin.auth.admin.deleteUser(created.user.id);
     return profileError.message.includes("Limite de 50 atletas")
       ? "Limite de 50 atletas cadastrados atingido."
@@ -77,9 +77,9 @@ async function createAccountCore({ email, password, fullName, role }: CreateAcco
   return null;
 }
 
-// Cria login de treinador ou aluno diretamente. Não existe autocadastro no
-// site — esta é uma das duas portas de entrada pra conta nova (a outra é
-// aprovar um pedido em /solicitar-acesso), ambas atrás do login do admin.
+// Creates a coach or student login directly. There's no self-signup on
+// the site — this is one of two entry points for a new account (the
+// other is approving a request in /solicitar-acesso), both behind the admin login.
 export async function createAccount(
   _prevState: CreateAccountState,
   formData: FormData
@@ -98,10 +98,10 @@ export async function createAccount(
   return { error: null, success: `Conta de ${roleLabel[role]} criada.` };
 }
 
-// Suspende/reativa uma conta. Suspensa: login passa a ser recusado (checagem
-// nos Server Actions de login) e o RLS corta o acesso mesmo pra quem já
-// tinha sessão aberta. Um admin não pode suspender a própria conta (evita
-// se trancar pra fora do painel).
+// Suspends/reactivates an account. Suspended: login is now refused
+// (checked in the login Server Actions) and RLS cuts off access even for
+// someone with an already-open session. An admin can't suspend their own
+// account (avoids locking themselves out of the panel).
 export async function toggleActive(profileId: string, active: boolean): Promise<void> {
   const adminId = await requireAdmin();
 
@@ -121,10 +121,10 @@ export interface ApproveRequestResult {
   password: string | null;
 }
 
-// Aprova um pedido de /solicitar-acesso: cria a conta de verdade (mesma
-// lógica do "Criar conta") com uma senha provisória gerada aqui — não tem
-// envio de e-mail no app, então a senha volta uma única vez nesta resposta
-// pro admin repassar por fora (WhatsApp etc).
+// Approves a /solicitar-acesso request: creates the real account (same
+// logic as "Create account") with a temporary password generated here —
+// there's no email sending in the app, so the password comes back only
+// once in this response for the admin to pass along another way (WhatsApp etc).
 export async function approveRequest(requestId: string): Promise<ApproveRequestResult> {
   const adminId = await requireAdmin();
   const admin = createAdminClient();
@@ -159,8 +159,8 @@ export async function approveRequest(requestId: string): Promise<ApproveRequestR
   return { error: null, password };
 }
 
-// Nega um pedido — só marca como negado, não cria nada. Ninguém é avisado
-// automaticamente (sem e-mail no app); é o admin quem decide se responde.
+// Denies a request — just marks it as denied, doesn't create anything.
+// Nobody is notified automatically (no email in the app); it's up to the admin whether to respond.
 export async function denyRequest(requestId: string): Promise<{ error: string | null }> {
   const adminId = await requireAdmin();
   const admin = createAdminClient();

@@ -11,9 +11,9 @@ function colorFor(pct: number): string {
   return "bg-blue-500"; // Leve
 }
 
-// Gráfico de blocos do treino: cada segmento é proporcional à duração e
-// colorido pela intensidade (%FTP) — Leve (azul), Moderado (amarelo
-// intenso) e Intenso (vermelho forte).
+// Workout block chart: each segment is proportional to duration and
+// colored by intensity (%FTP) — Light (blue), Moderate (intense yellow)
+// and Intense (strong red).
 export function IntervalTimeline({ intervals }: IntervalTimelineProps) {
   if (intervals.length === 0) return null;
 

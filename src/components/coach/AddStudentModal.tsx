@@ -121,12 +121,12 @@ const BLANK_STRENGTH: StrengthFields = {
 };
 
 /**
- * Modal de cadastro de aluno: dados corporais gerais + seções específicas
- * por modalidade (Ciclismo/Corrida/Academia), mostradas só quando a
- * modalidade principal ou uma adicional está selecionada — em accordions
- * (<details>) para o treinador preencher só o que for relevante, sem
- * poluir a tela com ~35 campos de uma vez. TODO: persistir via Supabase
- * quando o projeto estiver conectado (hoje só entra em memória).
+ * Student registration modal: general body data + discipline-specific
+ * sections (Cycling/Running/Strength), shown only when the main
+ * discipline or an additional one is selected — in accordions
+ * (<details>) so the coach only fills in what's relevant, without
+ * cluttering the screen with ~35 fields at once. TODO: persist via
+ * Supabase once the project is connected (today it only goes into memory).
  */
 export function AddStudentModal({ open, onClose, onAddStudent }: AddStudentModalProps) {
   const [general, setGeneral] = useState<GeneralFields>(BLANK_GENERAL);

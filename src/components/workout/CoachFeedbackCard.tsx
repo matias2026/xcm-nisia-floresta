@@ -9,9 +9,9 @@ interface CoachFeedbackCardProps {
 }
 
 /**
- * Feedback híbrido exibido ao atleta: a análise final é sempre do
- * treinador — o rascunho de IA (Gemini) só aparece como um selo indicando
- * apoio na redação, nunca como texto próprio exibido sozinho.
+ * Hybrid feedback shown to the athlete: the final analysis is always the
+ * coach's — the AI (Gemini) draft only shows up as a badge indicating
+ * writing assistance, never as standalone text on its own.
  */
 export function CoachFeedbackCard({ completed, coachName }: CoachFeedbackCardProps) {
   if (!completed) {

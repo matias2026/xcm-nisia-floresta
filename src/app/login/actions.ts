@@ -11,10 +11,10 @@ export interface LoginState {
   error: string | null;
 }
 
-// Login único (treinador, atleta ou admin). Não existe autocadastro — a
-// conta só existe se o painel /admin criou. Roda no servidor (Server
-// Action) para que o rate limit por IP seja real, e não algo que um client
-// malicioso pode ignorar.
+// Single login (coach, athlete, or admin). There's no self-signup — an
+// account only exists if the /admin panel created it. Runs on the server
+// (Server Action) so the per-IP rate limit is real, not something a
+// malicious client can bypass.
 export async function signIn(_prevState: LoginState, formData: FormData): Promise<LoginState> {
   const email = String(formData.get("email") ?? "").trim();
   const password = String(formData.get("password") ?? "");
@@ -43,8 +43,8 @@ export async function signIn(_prevState: LoginState, formData: FormData): Promis
     .select("role, active")
     .eq("id", data.user.id)
     .single();
-  // O generic da tabela via @supabase/ssr não propaga o tipo da coluna aqui;
-  // o shape é conhecido (profiles.role/active) então a asserção é segura.
+  // The table generic via @supabase/ssr doesn't propagate the column type
+  // here; the shape is known (profiles.role/active) so the assertion is safe.
   const profile = profileData as { role: ProfileRole; active: boolean } | null;
 
   if (!profile) {
@@ -57,9 +57,8 @@ export async function signIn(_prevState: LoginState, formData: FormData): Promis
     return { error: "Esta conta está suspensa. Fale com seu treinador." };
   }
 
-  // Admin entra por qualquer uma das duas abas — o toggle é só uma
-  // conveniência pra treinador/atleta, não uma trava real pra quem tem
-  // acesso a tudo.
+  // Admin can log in from either tab — the toggle is just a convenience
+  // for coach/athlete, not a real gate for someone with access to everything.
   if (expectedRole && profile.role !== expectedRole && profile.role !== "admin") {
     await supabase.auth.signOut();
     const correct = profile.role === "coach" ? "treinador" : "aluno";

@@ -4,12 +4,12 @@ const STRAVA_AUTHORIZE_URL = "https://www.strava.com/oauth/authorize";
 const STRAVA_TOKEN_URL = "https://www.strava.com/oauth/token";
 const STRAVA_API_BASE = "https://www.strava.com/api/v3";
 
-// Escopo mínimo necessário para ler atividades do atleta.
+// Minimum scope needed to read the athlete's activities.
 const SCOPE = "read,activity:read_all";
 
 /**
- * Monta a URL de autorização OAuth do Strava. `state` deve carregar o id do
- * perfil (profile_id) para associar o retorno do callback ao atleta correto.
+ * Builds the Strava OAuth authorization URL. `state` must carry the profile
+ * id (profile_id) to associate the callback return with the correct athlete.
  */
 export function buildStravaAuthorizeUrl(redirectUri: string, state: string) {
   const url = new URL(STRAVA_AUTHORIZE_URL);

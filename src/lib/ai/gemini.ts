@@ -36,9 +36,9 @@ function buildPrompt(input: FeedbackDraftInput): string {
 }
 
 /**
- * Gera um rascunho de feedback pós-treino via Gemini. Retorna texto puro,
- * pronto para o treinador revisar/editar antes de enviar ao atleta — nunca
- * é exibido ao atleta sem revisão humana.
+ * Generates a post-workout feedback draft via Gemini. Returns plain text,
+ * ready for the coach to review/edit before sending to the athlete — never
+ * shown to the athlete without human review.
  */
 export async function generateFeedbackDraft(input: FeedbackDraftInput): Promise<string> {
   const apiKey = process.env.GEMINI_API_KEY;

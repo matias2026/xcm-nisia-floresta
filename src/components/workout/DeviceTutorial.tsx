@@ -38,9 +38,9 @@ const DEVICES: DeviceGuide[] = [
   },
 ];
 
-// Seletor de dispositivo + mini tutorial expansível para importar o
-// arquivo de treino baixado. Cobre as marcas mais comuns entre os alunos,
-// não só Garmin.
+// Device selector + expandable mini tutorial for importing the
+// downloaded workout file. Covers the most common brands among
+// students, not just Garmin.
 export function DeviceTutorial() {
   const [selected, setSelected] = useState<DeviceKey | null>(null);
   const guide = DEVICES.find((d) => d.key === selected) ?? null;

@@ -21,10 +21,10 @@ const RPE_SCALE = Array.from({ length: 10 }, (_, i) => i + 1);
 const FEELING_SCALE = [1, 2, 3, 4, 5];
 
 /**
- * Modal de feedback pós-treino: aberto ao clicar em "Marcar como concluído".
- * Registra RPE (1-10), sensação (emoji, 1-5) e observações — tudo em estado
- * local, repassado ao chamador via onSubmit. TODO: persistir em
- * workout_completions via Supabase quando o projeto estiver conectado.
+ * Post-workout feedback modal: opened by clicking "Mark as completed".
+ * Records RPE (1-10), feeling (emoji, 1-5) and notes — all in local
+ * state, passed back to the caller via onSubmit. TODO: persist to
+ * workout_completions via Supabase once the project is connected.
  */
 export function RpeFeedbackModal({ open, onClose, onSubmit }: RpeFeedbackModalProps) {
   const [rpe, setRpe] = useState<number | null>(null);

@@ -26,17 +26,17 @@ interface MetricRow {
   comparison: PlanComparison;
 }
 
-// Cor do valor "Concluído" conforme a comparação com o planejado: azul
-// dentro da tolerância, vermelho fora do esperado, neutro sem dado ainda.
+// "Completed" value color based on comparison with the planned value: blue
+// within tolerance, red outside expectations, neutral when there's no data yet.
 const COMPARISON_TEXT_CLASS: Record<PlanComparison, string> = {
   match: "text-blue-600",
   off: "text-red-600",
   none: "text-g4-ink",
 };
 
-// Tabela comparativa Planejado vs. Concluído, no padrão TrainingPeaks, com
-// as métricas fundamentais de treino. Ritmo/velocidade é calculado a partir
-// de distância + duração de cada coluna.
+// Planned vs. Completed comparison table, TrainingPeaks-style, with the
+// fundamental workout metrics. Pace/speed is computed from each column's
+// distance + duration.
 export function PlannedVsCompleted({ discipline, planned, completed }: PlannedVsCompletedProps) {
   const rows: MetricRow[] = [
     {

@@ -16,9 +16,9 @@ const accentBorder: Record<WorkoutStatus, string> = {
 };
 
 /**
- * Aba "Acompanhamento do dia": leitura rápida de quem já treinou, quem está
- * pendente e quem sincronizou o Strava — sem os campos de edição das outras
- * abas.
+ * "Today's overview" tab: a quick read of who's already trained, who's
+ * pending, and who's synced Strava — without the editing fields of the
+ * other tabs.
  */
 export function TodayOverviewTab({ students }: TodayOverviewTabProps) {
   return (

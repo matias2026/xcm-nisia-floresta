@@ -13,7 +13,7 @@ export function canExportStructuredWorkout(workout: ExportableWorkout): boolean 
 }
 
 // ---------------------------------------------------------------------------
-// .ZWO (formato de treino estruturado do Zwift)
+// .ZWO (Zwift structured workout format)
 // ---------------------------------------------------------------------------
 
 function escapeXml(value: string): string {
@@ -46,9 +46,9 @@ function segmentToXml(interval: WorkoutInterval): string {
 }
 
 /**
- * Gera o XML .ZWO (formato de treino estruturado do Zwift, compatível com
- * importação em relógios/plataformas Garmin e Wahoo via %FTP). Só cobre
- * ciclismo — corrida/academia usariam zonas de ritmo, fora do escopo atual.
+ * Generates the .ZWO XML (Zwift structured workout format, compatible
+ * with import into Garmin and Wahoo watches/platforms via %FTP). Only
+ * covers cycling — running/strength would use pace zones, out of current scope.
  */
 export function buildZwoXml(workout: ExportableWorkout): string {
   const segments = workout.structuredIntervals.map(segmentToXml).join("\n    ");
@@ -67,18 +67,18 @@ export function buildZwoXml(workout: ExportableWorkout): string {
 }
 
 // ---------------------------------------------------------------------------
-// .FIT (formato binário nativo Garmin, via SDK oficial @garmin/fitsdk)
+// .FIT (native Garmin binary format, via the official @garmin/fitsdk SDK)
 // ---------------------------------------------------------------------------
-// Números de mensagem/campo e valores de enum abaixo vêm direto do FIT
-// Profile embutido no pacote (node_modules/@garmin/fitsdk/src/profile.js),
-// não de memória — evita gerar um binário inválido por campo/enum errado.
+// The message/field numbers and enum values below come straight from the
+// FIT Profile bundled in the package (node_modules/@garmin/fitsdk/src/profile.js),
+// not from memory — avoids generating an invalid binary from a wrong field/enum.
 
 const FILE_TYPE_WORKOUT = 5; // Profile.types.file[5] === "workout"
 const MANUFACTURER_DEVELOPMENT = 255; // Profile.types.manufacturer[255] === "development"
 const SPORT_CYCLING = 2; // Profile.types.sport[2] === "cycling"
 const DURATION_TYPE_TIME = 0; // Profile.types.wktStepDuration[0] === "time"
 const TARGET_TYPE_POWER = 4; // Profile.types.wktStepTarget[4] === "power"
-// capabilities: bit 0x0001 "interval" + bit 0x0800 "power" (fonte de potência exigida)
+// capabilities: bit 0x0001 "interval" + bit 0x0800 "power" (power source required)
 const WORKOUT_CAPABILITIES_INTERVAL_POWER = 0x0001 | 0x0800;
 
 const INTENSITY_BY_TYPE: Record<WorkoutIntervalType, number> = {
@@ -89,25 +89,25 @@ const INTENSITY_BY_TYPE: Record<WorkoutIntervalType, number> = {
   interval: 0, // "active"
 };
 
-// Convenção oficial do FIT para alvo de potência (Profile.types.workoutPower):
-// { 1000: "wattsOffset" } — valores >= 1000 representam 1000 + %FTP; abaixo
-// de 1000 seriam watts absolutos (não usado aqui, só %FTP).
+// Official FIT convention for a power target (Profile.types.workoutPower):
+// { 1000: "wattsOffset" } — values >= 1000 represent 1000 + %FTP; below
+// 1000 they'd be absolute watts (not used here, %FTP only).
 function ftpPercentToFitPower(pct: number): number {
   return 1000 + Math.round(pct);
 }
 
 /**
- * Gera um arquivo .FIT binário (treino estruturado nativo Garmin) a partir
- * de `structuredIntervals`, usando o SDK oficial da Garmin no navegador —
- * sem round-trip ao servidor, mesma lógica do .ZWO. Só cobre ciclismo.
+ * Generates a binary .FIT file (native Garmin structured workout) from
+ * `structuredIntervals`, using Garmin's official SDK in the browser —
+ * no server round-trip, same logic as the .ZWO. Only covers cycling.
  */
 export function buildFitWorkout(workout: ExportableWorkout): Uint8Array {
   const encoder = new Encoder();
 
-  // Cada mensagem é declarada com o tipo específico do SDK (FileIdMesg,
-  // WorkoutMesg, WorkoutStepMesg) — onMesg() só aceita o tipo genérico Mesg
-  // na assinatura, então a tipagem específica evita erros de campo sem
-  // precisar de "as any".
+  // Each message is declared with the SDK's specific type (FileIdMesg,
+  // WorkoutMesg, WorkoutStepMesg) — onMesg() only accepts the generic Mesg
+  // type in its signature, so the specific typing catches field errors
+  // without needing "as any".
   const fileId: FileIdMesg = {
     type: FILE_TYPE_WORKOUT,
     manufacturer: MANUFACTURER_DEVELOPMENT,

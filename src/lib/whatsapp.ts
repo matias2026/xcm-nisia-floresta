@@ -1,13 +1,13 @@
 import { formatDistance, formatDuration } from "./workout-metrics";
 import type { MockWorkoutDetail } from "./mock-data";
 
-/** Monta um link wa.me com o texto já preenchido (URL-encoded). */
+/** Builds a wa.me link with the text pre-filled (URL-encoded). */
 export function buildWhatsAppLink(phone: string, text: string): string {
   const digitsOnly = phone.replace(/\D/g, "");
   return `https://wa.me/${digitsOnly}?text=${encodeURIComponent(text)}`;
 }
 
-/** Texto formatado do treino do dia, enviado pelo treinador ao aluno. */
+/** Formatted text for the day's workout, sent by the coach to the athlete. */
 export function buildWorkoutWhatsAppMessage(workout: MockWorkoutDetail): string {
   const lines = [
     `*Treino de hoje — ${workout.title}*`,

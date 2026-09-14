@@ -27,8 +27,8 @@ const fieldClass =
   "mt-1 w-full rounded-xl border border-g4-border bg-white p-2.5 text-sm text-g4-ink focus-ring";
 const labelClass = "text-xs font-medium text-g4-muted";
 
-// Converte um número (ou string vazia) do input para o tipo do estado —
-// campos numéricos ficam null quando vazios, em vez de NaN.
+// Converts a number (or empty string) from the input to the state's type —
+// numeric fields become null when empty, instead of NaN.
 function parseNumberInput(value: string): number | null {
   if (value.trim() === "") return null;
   const parsed = Number(value);
@@ -36,12 +36,11 @@ function parseNumberInput(value: string): number | null {
 }
 
 /**
- * Painel de prescrição e análise do treinador: descrição, blocos
- * estruturados (aquecimento/parte principal/desaquecimento), vídeo/preleção
- * e as métricas planejadas (Duração, Distância, TSS, IF, FC) que alimentam
- * a comparação com o Concluído logo abaixo. TODO: persistir em
- * workouts via Supabase quando o projeto estiver conectado (hoje só
- * atualiza o estado da tela).
+ * Coach's prescription and analysis panel: description, structured
+ * blocks (warmup/main set/cooldown), video/briefing, and the planned
+ * metrics (Duration, Distance, TSS, IF, HR) that feed the comparison
+ * with Completed right below. TODO: persist to workouts via Supabase
+ * once the project is connected (today it only updates the screen's state).
  */
 export function WorkoutPrescriptionEditor({
   description,
