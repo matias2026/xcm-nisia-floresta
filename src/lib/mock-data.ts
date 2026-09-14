@@ -1,20 +1,20 @@
-// Dados de exemplo usados apenas para visualizar as telas antes da integração
-// real com Supabase/Strava. Substitua pelas consultas em src/lib/supabase
-// assim que o projeto Supabase estiver provisionado.
+// Sample data used only to preview the screens before real integration
+// with Supabase/Strava. Replace with the queries in src/lib/supabase
+// as soon as the Supabase project is provisioned.
 //
-// O Cockpit do treinador roda com um único aluno de exemplo (Carlos Silva) —
-// suficiente para validar todas as abas (cadastro, prescrição, acompanhamento
-// e análise) sem o ruído de uma lista fictícia grande. Novos alunos
-// cadastrados pela aba "Alunos cadastrados" entram em memória (useState),
-// até a persistência real via Supabase.
+// The coach's Cockpit runs with a single example student (Carlos Silva) —
+// enough to validate every tab (registration, prescription, tracking,
+// and analysis) without the noise of a large fictional list. New students
+// registered via the "Registered students" tab go into memory (useState),
+// until real persistence via Supabase.
 
 import type { WorkoutCompletionSource, WorkoutInterval, WorkoutStatus } from "./supabase/types";
 import type { ZoneDatum } from "@/components/workout/ZonesChart";
 
-// Treino exibido na aba "Analisar treino do aluno" (Planejado vs. Concluído),
-// no padrão TrainingPeaks. Um registro por aluno em mockWorkoutDetails, com
-// o mesmo id do aluno em mockStudents, até o treino real ser resolvido via
-// Supabase.
+// Workout shown in the "Analyze student workout" tab (Planned vs.
+// Completed), TrainingPeaks-style. One record per student in
+// mockWorkoutDetails, with the same id as the student in mockStudents,
+// until the real workout is resolved via Supabase.
 export interface MockWorkoutDetail {
   id: string;
   athleteName: string;
@@ -62,8 +62,8 @@ export interface MockWorkoutDetail {
 
 export const DEMO_WORKOUT_ID = "1";
 
-// Um modelo de treino por modalidade — usado como ponto de partida na aba
-// "Criar/Prescrever treino" quando o treinador escolhe a modalidade.
+// One workout template per discipline — used as a starting point in the
+// "Create/Prescribe workout" tab when the coach picks the discipline.
 export interface WorkoutTemplate {
   title: string;
   discipline: string;
@@ -363,15 +363,50 @@ export const mockWorkoutDetails: Record<string, MockWorkoutDetail> = {
   },
 };
 
-// Monta um rascunho de treino a partir do modelo da modalidade — ponto de
-// partida na aba "Criar/Prescrever treino" para um aluno sem prescrição
-// prévia (ou ao trocar a modalidade).
+// Campos em branco de uma prescrição nova — nenhum texto/número de exemplo,
+// só a estrutura que o formulário espera. Usado tanto ao criar o rascunho
+// inicial (buildWorkoutDraft) quanto ao trocar a modalidade em
+// PrescribeTab, pra nunca reaproveitar a descrição/métricas de outro
+// treino (ex.: título "Rodagem longa em Z2" mostrando o texto de uma
+// sessão de limiar) — o treinador preenche cada prescrição do zero.
+export interface BlankPrescriptionFields {
+  description: string;
+  prescription: MockWorkoutDetail["prescription"];
+  planned: MockWorkoutDetail["planned"];
+  structuredIntervals: WorkoutInterval[];
+}
+
+export function blankPrescriptionFields(discipline: string): BlankPrescriptionFields {
+  return {
+    description: "",
+    prescription: { warmup: "", mainSet: "", cooldown: "", videoUrl: null },
+    planned: {
+      durationSeconds: null,
+      distanceMeters: null,
+      tss: null,
+      ifScore: null,
+      hrMin: null,
+      hrAvg: null,
+      hrMax: null,
+    },
+    structuredIntervals: defaultIntervalsForDiscipline(discipline),
+  };
+}
+
+// Monta um rascunho de treino em branco — ponto de partida na aba
+// "Criar/Prescrever treino" para um aluno sem prescrição prévia (ou ao
+// trocar a modalidade). Só o título/modalidade vêm de um valor padrão
+// (o primeiro título da lista da modalidade, ver WORKOUT_TITLES em
+// PrescribeTab.tsx); descrição, blocos e métricas ficam em branco — nunca
+// preenchidos com o conteúdo de exemplo de TEMPLATE_CICLISMO/CORRIDA/
+// ACADEMIA, que existe só para o aluno de demonstração (ver mockWorkoutDetails).
 export function buildWorkoutDraft(
   student: MockStudent,
   discipline: string,
   scheduledDateLabel: string
 ): MockWorkoutDetail {
   const template = templateForDiscipline(discipline);
+  const blank = blankPrescriptionFields(discipline);
 
   return {
     id: student.id,
@@ -383,11 +418,11 @@ export function buildWorkoutDraft(
     discipline: template.discipline,
     scheduledDateLabel,
     status: "pending",
-    description: template.description,
-    prescription: template.prescription,
-    structuredIntervals: defaultIntervalsForDiscipline(template.discipline),
-    powerZones: template.powerZones,
-    planned: template.planned,
+    description: blank.description,
+    prescription: blank.prescription,
+    structuredIntervals: blank.structuredIntervals,
+    powerZones: [],
+    planned: blank.planned,
     completed: null,
   };
 }

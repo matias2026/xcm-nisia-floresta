@@ -6,7 +6,7 @@ import { LinkButton } from "@/components/ui/LinkButton";
 import { IntervalEditor } from "@/components/workout/IntervalEditor";
 import { WorkoutPrescriptionEditor, type PlannedMetrics } from "@/components/workout/WorkoutPrescriptionEditor";
 import { buildWhatsAppLink, buildWorkoutWhatsAppMessage } from "@/lib/whatsapp";
-import { buildWorkoutDraft, defaultIntervalsForDiscipline, templateForDiscipline } from "@/lib/mock-data";
+import { blankPrescriptionFields, buildWorkoutDraft } from "@/lib/mock-data";
 import type { MockStudent, MockWorkoutDetail } from "@/lib/mock-data";
 import type { WorkoutInterval } from "@/lib/supabase/types";
 
@@ -20,10 +20,10 @@ interface PrescribeTabProps {
 
 const DISCIPLINES = ["Ciclismo", "Corrida", "Academia"];
 
-// Títulos pré-estabelecidos por modalidade — evita treino de corrida
-// aparecendo prescrito para um aluno de ciclismo (ou vice-versa). O treinador
-// ainda pode trocar a modalidade manualmente (ex.: aluno com Ciclismo de
-// manhã + Academia à tarde), e a lista de títulos acompanha a troca.
+// Pre-set titles per discipline — avoids a running workout showing up
+// prescribed for a cycling student (or vice versa). The coach can still
+// switch the discipline manually (e.g. a student with Cycling in the
+// morning + Strength training in the afternoon), and the title list follows the switch.
 const WORKOUT_TITLES: Record<string, string[]> = {
   Ciclismo: [
     "Intervalado de limiar",
@@ -61,12 +61,12 @@ function formatDateLabel(iso: string): string {
 }
 
 /**
- * Aba "Criar/Prescrever treino": formulário completo — aluno, data,
- * modalidade, blocos estruturados (aquecimento/tiros/desaquecimento),
- * metas de TSS/IF e link de vídeo — com envio direto por WhatsApp.
- * A troca de aluno remonta o formulário (via `key`) para carregar a
- * prescrição existente dele, se houver, ou um rascunho a partir do modelo
- * da modalidade.
+ * "Create/Prescribe workout" tab: full form — student, date,
+ * discipline, structured blocks (warmup/intervals/cooldown),
+ * TSS/IF targets, and video link — with direct WhatsApp sending.
+ * Switching students remounts the form (via `key`) to load their
+ * existing prescription, if any, or a draft from the discipline's
+ * template.
  */
 export function PrescribeTab({
   students,
@@ -138,13 +138,13 @@ function PrescriptionForm({ student, existingWorkout, onSaveWorkout }: Prescript
   const isCycling = discipline === "Ciclismo";
 
   function handleDisciplineChange(next: string) {
-    const template = templateForDiscipline(next);
+    const blank = blankPrescriptionFields(next);
     setDiscipline(next);
     setTitle(WORKOUT_TITLES[next][0]);
-    setDescription(template.description);
-    setPrescription(template.prescription);
-    setPlanned(template.planned);
-    setStructuredIntervals(defaultIntervalsForDiscipline(next));
+    setDescription(blank.description);
+    setPrescription(blank.prescription);
+    setPlanned(blank.planned);
+    setStructuredIntervals(blank.structuredIntervals);
     setSaved(false);
   }
 
