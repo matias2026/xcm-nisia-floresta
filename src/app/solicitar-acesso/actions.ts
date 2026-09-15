@@ -34,6 +34,8 @@ export async function submitAccessRequest(
   const weightRaw = String(formData.get("weight_kg") ?? "").trim();
   const heightRaw = String(formData.get("height_cm") ?? "").trim();
   const medicalNotes = String(formData.get("medical_notes") ?? "").trim();
+  const modalidade = String(formData.get("modalidade") ?? "").trim();
+  const trainingExperienceRaw = String(formData.get("training_experience") ?? "").trim();
   const recaptchaToken = String(formData.get("g-recaptcha-response") ?? "");
 
   if (!fullName || !email || !password) {
@@ -82,6 +84,11 @@ export async function submitAccessRequest(
     weight_kg: roleRequested === "athlete" && weightRaw ? Number(weightRaw) : null,
     height_cm: roleRequested === "athlete" && heightRaw ? Number(heightRaw) : null,
     medical_notes: roleRequested === "athlete" ? medicalNotes || null : null,
+    modalidade: roleRequested === "athlete" ? modalidade || null : null,
+    training_experience:
+      roleRequested === "athlete" && (trainingExperienceRaw === "iniciante" || trainingExperienceRaw === "experiente")
+        ? trainingExperienceRaw
+        : null,
   });
 
   if (error) {

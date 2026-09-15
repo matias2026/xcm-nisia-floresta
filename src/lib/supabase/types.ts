@@ -63,6 +63,7 @@ export interface Database {
           created_at: string;
           age: number | null;
           medical_notes: string;
+          coach_notes: string;
         };
         Insert: {
           id?: string;
@@ -76,6 +77,7 @@ export interface Database {
           created_at?: string;
           age?: number | null;
           medical_notes?: string;
+          coach_notes?: string;
         };
         Update: Partial<Database["public"]["Tables"]["alunos"]["Insert"]>;
         Relationships: [];
@@ -133,6 +135,8 @@ export interface Database {
           height_cm: number | null;
           medical_notes: string | null;
           password: string | null;
+          modalidade: string | null;
+          training_experience: "iniciante" | "experiente" | null;
         };
         Insert: {
           id?: string;
@@ -149,6 +153,8 @@ export interface Database {
           weight_kg?: number | null;
           height_cm?: number | null;
           medical_notes?: string | null;
+          modalidade?: string | null;
+          training_experience?: "iniciante" | "experiente" | null;
           password?: string | null;
         };
         Update: Partial<Database["public"]["Tables"]["access_requests"]["Insert"]>;

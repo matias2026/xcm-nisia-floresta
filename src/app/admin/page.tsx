@@ -32,7 +32,7 @@ export default async function AdminPage() {
 
   const { data: pendingRequests } = await admin
     .from("access_requests")
-    .select("id, full_name, email, phone, role_requested, message, created_at, birth_date")
+    .select("id, full_name, email, phone, role_requested, message, created_at, birth_date, modalidade, training_experience")
     .eq("status", "pending")
     .order("created_at", { ascending: true });
 
@@ -86,6 +86,9 @@ export default async function AdminPage() {
                     {r.role_requested === "coach" ? "Quer entrar como treinador" : "Quer entrar como aluno"}
                     {r.phone ? ` · ${r.phone}` : ""}
                     {r.birth_date ? ` · ${calculateAge(r.birth_date)} anos` : ""}
+                    {r.modalidade ? ` · ${r.modalidade}` : ""}
+                    {r.training_experience === "iniciante" ? " · novato(a)" : ""}
+                    {r.training_experience === "experiente" ? " · já tem experiência" : ""}
                   </p>
                   {r.message && <p className="mt-1 text-sm text-g4-ink">&ldquo;{r.message}&rdquo;</p>}
                 </div>

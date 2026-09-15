@@ -31,6 +31,8 @@ interface CreateAccountInput {
   weightKg?: number | null;
   heightCm?: number | null;
   medicalNotes?: string;
+  modalidade?: string | null;
+  coachNotes?: string;
 }
 
 // Logic shared by "Create account" (direct form) and "Approve"
@@ -47,6 +49,8 @@ async function createAccountCore({
   weightKg,
   heightCm,
   medicalNotes,
+  modalidade,
+  coachNotes,
 }: CreateAccountInput): Promise<string | null> {
   const password = rawPassword.trim();
   if (!email || !password || !fullName) return "Preencha nome, e-mail e senha.";
@@ -91,6 +95,8 @@ async function createAccountCore({
       peso: weightKg ?? null,
       altura: heightCm ?? null,
       medical_notes: medicalNotes?.trim() ?? "",
+      modalidade: modalidade ?? null,
+      coach_notes: coachNotes?.trim() ?? "",
     });
 
     if (alunoError) {
@@ -138,7 +144,7 @@ export async function approveRequest(requestId: string): Promise<ApproveRequestR
   const { data: reqRow } = await admin
     .from("access_requests")
     .select(
-      "id, full_name, email, role_requested, status, password, birth_date, weight_kg, height_cm, medical_notes"
+      "id, full_name, email, role_requested, status, password, birth_date, weight_kg, height_cm, medical_notes, modalidade, training_experience"
     )
     .eq("id", requestId)
     .single();
@@ -150,6 +156,16 @@ export async function approveRequest(requestId: string): Promise<ApproveRequestR
   const ownPassword = reqRow.password?.trim();
   const generatedPassword = ownPassword ? null : randomBytes(9).toString("base64url");
 
+  // Sem experiência registrada ainda = FC estimada por idade é só ponto de
+  // partida; já experiente vale a pena o treinador pedir um valor medido
+  // — essa nota fica registrada pra ele ver direto na ficha do aluno.
+  const experienceNote =
+    reqRow.training_experience === "iniciante"
+      ? "Informou no cadastro que é novato(a) — sem dado de treino real ainda, FC máxima é estimativa por idade."
+      : reqRow.training_experience === "experiente"
+        ? "Informou no cadastro que já tem experiência com treino/assessoria — vale pedir valores medidos (FC, FTP etc.) em vez de só estimar."
+        : "";
+
   const error = await createAccountCore({
     email: reqRow.email,
     password: ownPassword || generatedPassword!,
@@ -159,6 +175,8 @@ export async function approveRequest(requestId: string): Promise<ApproveRequestR
     weightKg: reqRow.weight_kg,
     heightCm: reqRow.height_cm,
     medicalNotes: reqRow.medical_notes ?? undefined,
+    modalidade: reqRow.modalidade,
+    coachNotes: experienceNote,
   });
 
   if (error) return { error, password: null };

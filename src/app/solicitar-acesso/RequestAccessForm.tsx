@@ -15,6 +15,14 @@ const SITE_KEY = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
 
 type RequestRole = "athlete" | "coach";
 
+const DISCIPLINES = ["Ciclismo", "Corrida", "Academia"] as const;
+
+type Experience = "iniciante" | "experiente";
+const EXPERIENCE_OPTIONS: { value: Experience; label: string }[] = [
+  { value: "iniciante", label: "Sou novato(a)" },
+  { value: "experiente", label: "Já tenho experiência" },
+];
+
 // PAR-Q (Physical Activity Readiness Questionnaire) — questionário
 // padrão de triagem pré-atividade física, desenvolvido pela CSEP
 // (Canadian Society for Exercise Physiology) e adotado no Brasil como
@@ -63,6 +71,8 @@ export function RequestAccessForm() {
   const [birthDate, setBirthDate] = useState("");
   const [parqAnswers, setParqAnswers] = useState<Record<string, boolean>>({});
   const [boneJointLocation, setBoneJointLocation] = useState("");
+  const [modalidade, setModalidade] = useState<(typeof DISCIPLINES)[number]>("Ciclismo");
+  const [experience, setExperience] = useState<Experience>("iniciante");
 
   const estimatedHrMax =
     birthDate && !Number.isNaN(Date.parse(birthDate)) ? estimateMaxHeartRate(calculateAge(birthDate)) : null;
@@ -161,6 +171,52 @@ export function RequestAccessForm() {
 
         {role === "athlete" && (
           <>
+            <div className="flex flex-col gap-4 text-sm">
+              <span className="font-medium text-g4-ink">Modalidade</span>
+              <input type="hidden" name="modalidade" value={modalidade} />
+              <div className="grid grid-cols-3 gap-4 rounded-xl bg-g4-surface-alt p-1">
+                {DISCIPLINES.map((d) => (
+                  <button
+                    key={d}
+                    type="button"
+                    onClick={() => setModalidade(d)}
+                    className={cn(
+                      "rounded-lg px-2 py-2 text-xs font-semibold transition-colors focus-ring",
+                      modalidade === d ? "bg-lime text-g4-ink" : "text-g4-muted hover:text-g4-ink"
+                    )}
+                  >
+                    {d}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-4 text-sm">
+              <span className="font-medium text-g4-ink">Experiência com treino</span>
+              <input type="hidden" name="training_experience" value={experience} />
+              <div className="grid grid-cols-2 gap-4 rounded-xl bg-g4-surface-alt p-1">
+                {EXPERIENCE_OPTIONS.map((opt) => (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => setExperience(opt.value)}
+                    className={cn(
+                      "rounded-lg px-2 py-2 text-xs font-semibold transition-colors focus-ring",
+                      experience === opt.value ? "bg-lime text-g4-ink" : "text-g4-muted hover:text-g4-ink"
+                    )}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+              {experience === "iniciante" && (
+                <span className="text-xs text-g4-muted">
+                  Sem treino registrado ainda — a FC máxima abaixo é só uma estimativa pela idade, até você ter um
+                  valor medido de verdade.
+                </span>
+              )}
+            </div>
+
             <label className="flex flex-col gap-4 text-sm">
               <span className="font-medium text-g4-ink">Data de nascimento</span>
               <input
