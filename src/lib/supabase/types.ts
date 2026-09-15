@@ -129,6 +129,9 @@ export interface Database {
           reviewed_at: string | null;
           created_at: string;
           birth_date: string | null;
+          weight_kg: number | null;
+          height_cm: number | null;
+          medical_notes: string | null;
         };
         Insert: {
           id?: string;
@@ -142,6 +145,9 @@ export interface Database {
           reviewed_at?: string | null;
           created_at?: string;
           birth_date?: string | null;
+          weight_kg?: number | null;
+          height_cm?: number | null;
+          medical_notes?: string | null;
         };
         Update: Partial<Database["public"]["Tables"]["access_requests"]["Insert"]>;
         Relationships: [];

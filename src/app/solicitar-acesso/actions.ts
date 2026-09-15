@@ -27,6 +27,9 @@ export async function submitAccessRequest(
   const message = String(formData.get("message") ?? "").trim();
   const roleRequested = String(formData.get("role_requested") ?? "") as AccessRequestRole;
   const birthDateRaw = String(formData.get("birth_date") ?? "").trim();
+  const weightRaw = String(formData.get("weight_kg") ?? "").trim();
+  const heightRaw = String(formData.get("height_cm") ?? "").trim();
+  const medicalNotes = String(formData.get("medical_notes") ?? "").trim();
   const recaptchaToken = String(formData.get("g-recaptcha-response") ?? "");
 
   if (!fullName || !email) {
@@ -68,6 +71,9 @@ export async function submitAccessRequest(
     role_requested: roleRequested,
     message: message || null,
     birth_date: birthDate,
+    weight_kg: roleRequested === "athlete" && weightRaw ? Number(weightRaw) : null,
+    height_cm: roleRequested === "athlete" && heightRaw ? Number(heightRaw) : null,
+    medical_notes: roleRequested === "athlete" ? medicalNotes || null : null,
   });
 
   if (error) {

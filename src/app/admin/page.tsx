@@ -4,7 +4,6 @@ import { Badge } from "@/components/ui/Badge";
 import { Card } from "@/components/ui/Card";
 import { LogoutButton } from "@/components/auth/LogoutButton";
 import { RoleNav } from "@/components/auth/RoleNav";
-import { CreateAccountForm } from "./CreateAccountForm";
 import { ToggleActiveButton } from "./ToggleActiveButton";
 import { RequestActions } from "./RequestActions";
 
@@ -45,7 +44,7 @@ export default async function AdminPage() {
         <div>
           <h1 className="text-xl font-bold text-g4-ink">Painel administrador</h1>
           <p className="text-sm text-g4-muted">
-            Aprove pedidos de /solicitar-acesso ou crie contas direto — sem outro jeito de entrar no site.
+            Aprove ou negue pedidos de acesso — é o único jeito de entrar no site.
           </p>
         </div>
         <LogoutButton />
@@ -95,11 +94,6 @@ export default async function AdminPage() {
             ))}
           </div>
         )}
-      </Card>
-
-      <Card className="p-5">
-        <h2 className="text-sm font-bold text-g4-ink">Criar conta direto</h2>
-        <CreateAccountForm />
       </Card>
 
       {/* Celular: cards empilhados — nunca tabela rolando na horizontal.

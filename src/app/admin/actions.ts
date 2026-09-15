@@ -7,13 +7,6 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import type { ProfileRole } from "@/lib/supabase/types";
 import { calculateAge } from "@/lib/workout-metrics";
 
-export interface CreateAccountState {
-  error: string | null;
-  success: string | null;
-}
-
-const initialState: CreateAccountState = { error: null, success: null };
-
 async function requireAdmin(): Promise<string> {
   const supabase = await createClient();
   const {
@@ -29,8 +22,6 @@ async function requireAdmin(): Promise<string> {
   return user.id;
 }
 
-const roleLabel: Record<ProfileRole, string> = { coach: "treinador", athlete: "aluno", admin: "administrador" };
-
 interface CreateAccountInput {
   email: string;
   password: string;
@@ -38,6 +29,7 @@ interface CreateAccountInput {
   role: ProfileRole;
   age?: number | null;
   weightKg?: number | null;
+  heightCm?: number | null;
   medicalNotes?: string;
 }
 
@@ -53,6 +45,7 @@ async function createAccountCore({
   role,
   age,
   weightKg,
+  heightCm,
   medicalNotes,
 }: CreateAccountInput): Promise<string | null> {
   const password = rawPassword.trim();
@@ -96,6 +89,7 @@ async function createAccountCore({
       nome: fullName,
       age: age ?? null,
       peso: weightKg ?? null,
+      altura: heightCm ?? null,
       medical_notes: medicalNotes?.trim() ?? "",
     });
 
@@ -106,38 +100,6 @@ async function createAccountCore({
   }
 
   return null;
-}
-
-// Creates a coach or student login directly. There's no self-signup on
-// the site — this is one of two entry points for a new account (the
-// other is approving a request in /solicitar-acesso), both behind the admin login.
-export async function createAccount(
-  _prevState: CreateAccountState,
-  formData: FormData
-): Promise<CreateAccountState> {
-  await requireAdmin();
-
-  const email = String(formData.get("email") ?? "").trim();
-  const password = String(formData.get("password") ?? "").trim();
-  const fullName = String(formData.get("full_name") ?? "").trim();
-  const role = String(formData.get("role") ?? "") as ProfileRole;
-  const ageRaw = String(formData.get("age") ?? "").trim();
-  const weightRaw = String(formData.get("weight_kg") ?? "").trim();
-  const medicalNotes = String(formData.get("medical_notes") ?? "").trim();
-
-  const error = await createAccountCore({
-    email,
-    password,
-    fullName,
-    role,
-    age: ageRaw ? Number(ageRaw) : null,
-    weightKg: weightRaw ? Number(weightRaw) : null,
-    medicalNotes,
-  });
-  if (error) return { ...initialState, error };
-
-  revalidatePath("/admin");
-  return { error: null, success: `Conta de ${roleLabel[role]} criada.` };
 }
 
 // Suspends/reactivates an account. Suspended: login is now refused
@@ -163,17 +125,17 @@ export interface ApproveRequestResult {
   password: string | null;
 }
 
-// Approves a /solicitar-acesso request: creates the real account (same
-// logic as "Create account") with a temporary password generated here —
-// there's no email sending in the app, so the password comes back only
-// once in this response for the admin to pass along another way (WhatsApp etc).
+// Approves a /solicitar-acesso request: creates the real account with a
+// temporary password generated here — there's no email sending in the
+// app, so the password comes back only once in this response for the
+// admin to pass along another way (WhatsApp etc).
 export async function approveRequest(requestId: string): Promise<ApproveRequestResult> {
   const adminId = await requireAdmin();
   const admin = createAdminClient();
 
   const { data: reqRow } = await admin
     .from("access_requests")
-    .select("id, full_name, email, role_requested, status, birth_date")
+    .select("id, full_name, email, role_requested, status, birth_date, weight_kg, height_cm, medical_notes")
     .eq("id", requestId)
     .single();
 
@@ -189,6 +151,9 @@ export async function approveRequest(requestId: string): Promise<ApproveRequestR
     fullName: reqRow.full_name,
     role: reqRow.role_requested,
     age: reqRow.birth_date ? calculateAge(reqRow.birth_date) : null,
+    weightKg: reqRow.weight_kg,
+    heightCm: reqRow.height_cm,
+    medicalNotes: reqRow.medical_notes ?? undefined,
   });
 
   if (error) return { error, password: null };

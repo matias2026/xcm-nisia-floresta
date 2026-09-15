@@ -97,23 +97,57 @@ export function RequestAccessForm() {
         </label>
 
         {role === "athlete" && (
-          <label className="flex flex-col gap-4 text-sm">
-            <span className="font-medium text-g4-ink">Data de nascimento</span>
-            <input
-              type="date"
-              name="birth_date"
-              value={birthDate}
-              onChange={(e) => setBirthDate(e.target.value)}
-              max={new Date().toISOString().slice(0, 10)}
-              className="rounded-xl border border-g4-border bg-white px-3 py-2.5 text-sm text-g4-ink focus-ring"
-            />
-            {estimatedHrMax && (
-              <span className="text-xs text-g4-muted">
-                FC máxima estimada: <span className="font-medium text-g4-ink">{estimatedHrMax} bpm</span> (o
-                treinador pode ajustar depois com um valor medido)
-              </span>
-            )}
-          </label>
+          <>
+            <label className="flex flex-col gap-4 text-sm">
+              <span className="font-medium text-g4-ink">Data de nascimento</span>
+              <input
+                type="date"
+                name="birth_date"
+                value={birthDate}
+                onChange={(e) => setBirthDate(e.target.value)}
+                max={new Date().toISOString().slice(0, 10)}
+                className="rounded-xl border border-g4-border bg-white px-3 py-2.5 text-sm text-g4-ink focus-ring"
+              />
+              {estimatedHrMax && (
+                <span className="text-xs text-g4-muted">
+                  FC máxima estimada: <span className="font-medium text-g4-ink">{estimatedHrMax} bpm</span> (o
+                  treinador pode ajustar depois com um valor medido)
+                </span>
+              )}
+            </label>
+
+            <div className="grid grid-cols-2 gap-4">
+              <label className="flex flex-col gap-4 text-sm">
+                <span className="font-medium text-g4-ink">Peso (kg)</span>
+                <input
+                  type="number"
+                  name="weight_kg"
+                  min={0}
+                  step={0.1}
+                  className="rounded-xl border border-g4-border bg-white px-3 py-2.5 text-sm text-g4-ink focus-ring"
+                />
+              </label>
+              <label className="flex flex-col gap-4 text-sm">
+                <span className="font-medium text-g4-ink">Altura (cm)</span>
+                <input
+                  type="number"
+                  name="height_cm"
+                  min={0}
+                  className="rounded-xl border border-g4-border bg-white px-3 py-2.5 text-sm text-g4-ink focus-ring"
+                />
+              </label>
+            </div>
+
+            <label className="flex flex-col gap-4 text-sm">
+              <span className="font-medium text-g4-ink">Anamnese — doenças ou dores crônicas</span>
+              <textarea
+                name="medical_notes"
+                rows={2}
+                placeholder="Ex.: hipertensão controlada, dor crônica no joelho direito..."
+                className="rounded-xl border border-g4-border bg-white px-3 py-2.5 text-sm text-g4-ink focus-ring"
+              />
+            </label>
+          </>
         )}
 
         <label className="flex flex-col gap-4 text-sm">

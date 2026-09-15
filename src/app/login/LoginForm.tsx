@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { useActionState } from "react";
-import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
@@ -76,13 +75,6 @@ export function LoginForm({ next }: { next: string }) {
           {pending ? "Entrando..." : role === "athlete" ? "Entrar como aluno" : "Entrar como treinador"}
         </Button>
       </form>
-
-      <p className="mt-4 text-center text-xs text-g4-muted">
-        Ainda não tem conta?{" "}
-        <Link href="/solicitar-acesso" className="font-medium text-g4-ink underline">
-          Peça acesso
-        </Link>
-      </p>
     </Card>
   );
 }

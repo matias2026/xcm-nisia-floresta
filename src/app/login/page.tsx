@@ -1,4 +1,4 @@
-import { LoginForm } from "./LoginForm";
+import { AccountAccessTabs } from "./AccountAccessTabs";
 
 export default async function LoginPage({
   searchParams,
@@ -9,7 +9,7 @@ export default async function LoginPage({
 
   return (
     <main className="flex min-h-screen items-center justify-center px-6 py-16">
-      <LoginForm next={next ?? ""} />
+      <AccountAccessTabs next={next ?? ""} />
     </main>
   );
 }
