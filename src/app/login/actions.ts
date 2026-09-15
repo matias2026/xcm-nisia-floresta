@@ -17,7 +17,7 @@ export interface LoginState {
 // malicious client can bypass.
 export async function signIn(_prevState: LoginState, formData: FormData): Promise<LoginState> {
   const email = String(formData.get("email") ?? "").trim();
-  const password = String(formData.get("password") ?? "");
+  const password = String(formData.get("password") ?? "").trim();
   const next = String(formData.get("next") ?? "");
   const expectedRole = String(formData.get("expected_role") ?? "");
 

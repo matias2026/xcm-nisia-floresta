@@ -42,7 +42,13 @@ interface CreateAccountInput {
 // (pre-check, so we don't create an orphaned Auth user for nothing) and
 // in the database (the enforce_athlete_cap trigger, which really holds
 // even if someone bypasses this function and inserts directly via SQL/service role).
-async function createAccountCore({ email, password, fullName, role }: CreateAccountInput): Promise<string | null> {
+async function createAccountCore({
+  email,
+  password: rawPassword,
+  fullName,
+  role,
+}: CreateAccountInput): Promise<string | null> {
+  const password = rawPassword.trim();
   if (!email || !password || !fullName) return "Preencha nome, e-mail e senha.";
   if (password.length < 8) return "A senha precisa ter pelo menos 8 caracteres.";
   if (!["coach", "athlete", "admin"].includes(role)) return "Papel inválido.";
@@ -87,7 +93,7 @@ export async function createAccount(
   await requireAdmin();
 
   const email = String(formData.get("email") ?? "").trim();
-  const password = String(formData.get("password") ?? "");
+  const password = String(formData.get("password") ?? "").trim();
   const fullName = String(formData.get("full_name") ?? "").trim();
   const role = String(formData.get("role") ?? "") as ProfileRole;
 
