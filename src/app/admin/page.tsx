@@ -1,4 +1,5 @@
 import { createAdminClient } from "@/lib/supabase/admin";
+import { calculateAge } from "@/lib/workout-metrics";
 import { Badge } from "@/components/ui/Badge";
 import { Card } from "@/components/ui/Card";
 import { LogoutButton } from "@/components/auth/LogoutButton";
@@ -32,7 +33,7 @@ export default async function AdminPage() {
 
   const { data: pendingRequests } = await admin
     .from("access_requests")
-    .select("id, full_name, email, phone, role_requested, message, created_at")
+    .select("id, full_name, email, phone, role_requested, message, created_at, birth_date")
     .eq("status", "pending")
     .order("created_at", { ascending: true });
 
@@ -85,6 +86,7 @@ export default async function AdminPage() {
                   <p className="text-xs text-g4-muted">
                     {r.role_requested === "coach" ? "Quer entrar como treinador" : "Quer entrar como aluno"}
                     {r.phone ? ` · ${r.phone}` : ""}
+                    {r.birth_date ? ` · ${calculateAge(r.birth_date)} anos` : ""}
                   </p>
                   {r.message && <p className="mt-1 text-sm text-g4-ink">&ldquo;{r.message}&rdquo;</p>}
                 </div>

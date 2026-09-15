@@ -26,6 +26,7 @@ export async function submitAccessRequest(
   const phone = String(formData.get("phone") ?? "").trim();
   const message = String(formData.get("message") ?? "").trim();
   const roleRequested = String(formData.get("role_requested") ?? "") as AccessRequestRole;
+  const birthDateRaw = String(formData.get("birth_date") ?? "").trim();
   const recaptchaToken = String(formData.get("g-recaptcha-response") ?? "");
 
   if (!fullName || !email) {
@@ -33,6 +34,18 @@ export async function submitAccessRequest(
   }
   if (!["athlete", "coach"].includes(roleRequested)) {
     return { ...initialState, error: "Selecione se você é aluno ou treinador." };
+  }
+
+  // Data de nascimento só faz sentido pra aluno (vira a idade da ficha na
+  // aprovação) — validada e nunca no futuro, mas é opcional: quem não
+  // preencher não é bloqueado, o treinador completa depois.
+  let birthDate: string | null = null;
+  if (roleRequested === "athlete" && birthDateRaw) {
+    const parsed = new Date(birthDateRaw);
+    if (Number.isNaN(parsed.getTime()) || parsed > new Date()) {
+      return { ...initialState, error: "Data de nascimento inválida." };
+    }
+    birthDate = birthDateRaw;
   }
 
   const ip = getClientIp(await headers());
@@ -54,6 +67,7 @@ export async function submitAccessRequest(
     phone: phone || null,
     role_requested: roleRequested,
     message: message || null,
+    birth_date: birthDate,
   });
 
   if (error) {

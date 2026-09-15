@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { ProfileRole } from "@/lib/supabase/types";
+import { calculateAge } from "@/lib/workout-metrics";
 
 export interface CreateAccountState {
   error: string | null;
@@ -172,7 +173,7 @@ export async function approveRequest(requestId: string): Promise<ApproveRequestR
 
   const { data: reqRow } = await admin
     .from("access_requests")
-    .select("id, full_name, email, role_requested, status")
+    .select("id, full_name, email, role_requested, status, birth_date")
     .eq("id", requestId)
     .single();
 
@@ -187,6 +188,7 @@ export async function approveRequest(requestId: string): Promise<ApproveRequestR
     password,
     fullName: reqRow.full_name,
     role: reqRow.role_requested,
+    age: reqRow.birth_date ? calculateAge(reqRow.birth_date) : null,
   });
 
   if (error) return { error, password: null };

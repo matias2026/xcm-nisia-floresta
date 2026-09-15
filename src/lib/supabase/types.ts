@@ -128,6 +128,7 @@ export interface Database {
           reviewed_by: string | null;
           reviewed_at: string | null;
           created_at: string;
+          birth_date: string | null;
         };
         Insert: {
           id?: string;
@@ -140,6 +141,7 @@ export interface Database {
           reviewed_by?: string | null;
           reviewed_at?: string | null;
           created_at?: string;
+          birth_date?: string | null;
         };
         Update: Partial<Database["public"]["Tables"]["access_requests"]["Insert"]>;
         Relationships: [];

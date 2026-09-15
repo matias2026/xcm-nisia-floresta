@@ -6,6 +6,7 @@ import Script from "next/script";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { calculateAge, estimateMaxHeartRate } from "@/lib/workout-metrics";
 import { submitAccessRequest, type RequestAccessState } from "./actions";
 
 const initialState: RequestAccessState = { error: null, success: false };
@@ -17,6 +18,10 @@ type RequestRole = "athlete" | "coach";
 export function RequestAccessForm() {
   const [state, formAction, pending] = useActionState(submitAccessRequest, initialState);
   const [role, setRole] = useState<RequestRole>("athlete");
+  const [birthDate, setBirthDate] = useState("");
+
+  const estimatedHrMax =
+    birthDate && !Number.isNaN(Date.parse(birthDate)) ? estimateMaxHeartRate(calculateAge(birthDate)) : null;
 
   if (state.success) {
     return (
@@ -90,6 +95,26 @@ export function RequestAccessForm() {
             className="rounded-xl border border-g4-border bg-white px-3 py-2.5 text-sm text-g4-ink focus-ring"
           />
         </label>
+
+        {role === "athlete" && (
+          <label className="flex flex-col gap-4 text-sm">
+            <span className="font-medium text-g4-ink">Data de nascimento</span>
+            <input
+              type="date"
+              name="birth_date"
+              value={birthDate}
+              onChange={(e) => setBirthDate(e.target.value)}
+              max={new Date().toISOString().slice(0, 10)}
+              className="rounded-xl border border-g4-border bg-white px-3 py-2.5 text-sm text-g4-ink focus-ring"
+            />
+            {estimatedHrMax && (
+              <span className="text-xs text-g4-muted">
+                FC máxima estimada: <span className="font-medium text-g4-ink">{estimatedHrMax} bpm</span> (o
+                treinador pode ajustar depois com um valor medido)
+              </span>
+            )}
+          </label>
+        )}
 
         <label className="flex flex-col gap-4 text-sm">
           <span className="font-medium text-g4-ink">Mensagem (opcional)</span>

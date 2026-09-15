@@ -36,6 +36,19 @@ export function estimateMaxHeartRate(age: number): number {
   return Math.round(208 - 0.7 * age);
 }
 
+// Idade completa a partir da data de nascimento (YYYY-MM-DD) — considera o
+// aniversário já ter passado ou não no ano corrente, não só a diferença de anos.
+export function calculateAge(birthDateIso: string): number {
+  const birth = new Date(birthDateIso);
+  const today = new Date();
+  let age = today.getFullYear() - birth.getFullYear();
+  const monthDiff = today.getMonth() - birth.getMonth();
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+    age--;
+  }
+  return age;
+}
+
 /**
  * Raw pace (sec/km, running) or average speed (km/h, cycling) value —
  * split out from formatPaceOrSpeed so it can be compared numerically
