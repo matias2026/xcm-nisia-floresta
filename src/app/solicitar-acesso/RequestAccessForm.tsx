@@ -15,13 +15,46 @@ const SITE_KEY = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
 
 type RequestRole = "athlete" | "coach";
 
+// Anamnese por checkbox — mais rápido pra preencher no celular do que
+// digitar. "Nenhuma" e "Outra" são mutuamente exclusivas com a lista;
+// "Outra" libera um campo curto só pra quando não cabe nas opções.
+const NONE_OPTION = "Nenhuma dessas";
+const OTHER_OPTION = "Outra";
+const MEDICAL_CONDITIONS = [
+  "Hipertensão",
+  "Diabetes",
+  "Problema cardíaco",
+  "Asma / problema respiratório",
+  "Dor crônica no joelho",
+  "Dor crônica na coluna/lombar",
+  "Dor crônica no ombro",
+  "Dor crônica no quadril ou tornozelo",
+];
+
 export function RequestAccessForm() {
   const [state, formAction, pending] = useActionState(submitAccessRequest, initialState);
   const [role, setRole] = useState<RequestRole>("athlete");
   const [birthDate, setBirthDate] = useState("");
+  const [conditions, setConditions] = useState<string[]>([]);
+  const [otherText, setOtherText] = useState("");
 
   const estimatedHrMax =
     birthDate && !Number.isNaN(Date.parse(birthDate)) ? estimateMaxHeartRate(calculateAge(birthDate)) : null;
+
+  function toggleCondition(option: string) {
+    setConditions((prev) => {
+      if (option === NONE_OPTION) return prev.includes(NONE_OPTION) ? [] : [NONE_OPTION];
+      const withoutNone = prev.filter((c) => c !== NONE_OPTION);
+      return withoutNone.includes(option) ? withoutNone.filter((c) => c !== option) : [...withoutNone, option];
+    });
+  }
+
+  const medicalNotes = conditions.includes(NONE_OPTION)
+    ? ""
+    : conditions
+        .map((c) => (c === OTHER_OPTION ? (otherText.trim() ? `Outra: ${otherText.trim()}` : null) : c))
+        .filter((c): c is string => c !== null)
+        .join("; ");
 
   if (state.success) {
     return (
@@ -151,15 +184,46 @@ export function RequestAccessForm() {
               </label>
             </div>
 
-            <label className="flex flex-col gap-4 text-sm">
+            <div className="flex flex-col gap-4 text-sm">
               <span className="font-medium text-g4-ink">Anamnese — doenças ou dores crônicas</span>
-              <textarea
-                name="medical_notes"
-                rows={2}
-                placeholder="Ex.: hipertensão controlada, dor crônica no joelho direito..."
-                className="rounded-xl border border-g4-border bg-white px-3 py-2.5 text-sm text-g4-ink focus-ring"
-              />
-            </label>
+              <input type="hidden" name="medical_notes" value={medicalNotes} />
+              <div className="grid grid-cols-2 gap-x-4 gap-y-4 rounded-xl border border-g4-border bg-white p-3">
+                {MEDICAL_CONDITIONS.map((option) => (
+                  <label key={option} className="flex items-center gap-4 text-sm text-g4-ink">
+                    <input
+                      type="checkbox"
+                      checked={conditions.includes(option)}
+                      onChange={() => toggleCondition(option)}
+                    />
+                    {option}
+                  </label>
+                ))}
+                <label className="flex items-center gap-4 text-sm text-g4-ink">
+                  <input
+                    type="checkbox"
+                    checked={conditions.includes(OTHER_OPTION)}
+                    onChange={() => toggleCondition(OTHER_OPTION)}
+                  />
+                  {OTHER_OPTION}
+                </label>
+                <label className="col-span-2 flex items-center gap-4 border-t border-g4-border pt-3 text-sm text-g4-ink">
+                  <input
+                    type="checkbox"
+                    checked={conditions.includes(NONE_OPTION)}
+                    onChange={() => toggleCondition(NONE_OPTION)}
+                  />
+                  {NONE_OPTION}
+                </label>
+              </div>
+              {conditions.includes(OTHER_OPTION) && (
+                <input
+                  value={otherText}
+                  onChange={(e) => setOtherText(e.target.value)}
+                  placeholder="Qual?"
+                  className="rounded-xl border border-g4-border bg-white px-3 py-2.5 text-sm text-g4-ink focus-ring"
+                />
+              )}
+            </div>
           </>
         )}
 
