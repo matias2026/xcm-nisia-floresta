@@ -14,12 +14,19 @@ export type WorkoutCompletionSource = "strava" | "manual";
 
 export type WorkoutIntervalType = "warmup" | "steady" | "interval" | "recovery" | "cooldown";
 
-/** Segmento de treino estruturado (base para gerar o arquivo .ZWO). Alvo em %FTP. */
+/**
+ * Segmento de treino estruturado (base para gerar o arquivo .ZWO). Alvo
+ * principal em %FTP. `targetHrBpm` é uma referência opcional de FC —
+ * sugerida (FC máxima do aluno, medida ou estimada pela fórmula de
+ * Tanaka) mas sempre editável pelo treinador; não entra no .ZWO/.FIT
+ * exportado, que continua sendo por potência.
+ */
 export interface WorkoutInterval {
   type: WorkoutIntervalType;
   durationSeconds: number;
   targetLowPct: number;
   targetHighPct: number;
+  targetHrBpm?: number | null;
 }
 
 export interface Database {

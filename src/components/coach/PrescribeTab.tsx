@@ -9,6 +9,7 @@ import { buildWhatsAppLink, buildWorkoutWhatsAppMessage } from "@/lib/whatsapp";
 import { blankPrescriptionFields, buildWorkoutDraft } from "@/lib/mock-data";
 import type { MockStudent, MockWorkoutDetail } from "@/lib/mock-data";
 import type { WorkoutInterval } from "@/lib/supabase/types";
+import { estimateMaxHeartRate } from "@/lib/workout-metrics";
 
 interface PrescribeTabProps {
   students: MockStudent[];
@@ -137,6 +138,10 @@ function PrescriptionForm({ student, existingWorkout, onSaveWorkout }: Prescript
 
   const isCycling = discipline === "Ciclismo";
 
+  // FC máxima do aluno pra sugerir o campo "FC alvo" dos blocos — prioriza
+  // o valor medido (cadastro); sem isso, estima pela fórmula de Tanaka.
+  const suggestedHrMaxBpm = student.cycling?.hrMax ?? (student.age ? estimateMaxHeartRate(student.age) : null);
+
   function handleDisciplineChange(next: string) {
     const blank = blankPrescriptionFields(next);
     setDiscipline(next);
@@ -242,7 +247,8 @@ function PrescriptionForm({ student, existingWorkout, onSaveWorkout }: Prescript
           <CardTitle>Blocos por %FTP / zona</CardTitle>
           <p className="mt-1 text-xs text-g4-muted">
             Aquecimento, tiros, recuperação e desaquecimento — a mesma estrutura usada para gerar o
-            arquivo .ZWO do aluno.
+            arquivo .ZWO do aluno. FC alvo é opcional, sugerida pela FC máxima do aluno (medida ou
+            estimada pela fórmula de Tanaka) e sempre editável.
           </p>
           <IntervalEditor
             intervals={structuredIntervals}
@@ -250,6 +256,7 @@ function PrescriptionForm({ student, existingWorkout, onSaveWorkout }: Prescript
               setStructuredIntervals(next);
               setSaved(false);
             }}
+            suggestedHrMaxBpm={suggestedHrMaxBpm}
           />
         </Card>
       )}

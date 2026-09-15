@@ -25,7 +25,7 @@ export function IntervalTimeline({ intervals }: IntervalTimelineProps) {
         {intervals.map((interval, index) => (
           <div
             key={index}
-            title={`${TYPE_LABELS[interval.type]} · ${Math.round(interval.durationSeconds / 60)}min · ${interval.targetHighPct}% FTP`}
+            title={`${TYPE_LABELS[interval.type]} · ${Math.round(interval.durationSeconds / 60)}min · ${interval.targetHighPct}% FTP${interval.targetHrBpm ? ` · ${interval.targetHrBpm} bpm` : ""}`}
             className={colorFor(interval.targetHighPct)}
             style={{ width: `${(interval.durationSeconds / total) * 100}%` }}
           />

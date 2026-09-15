@@ -4,6 +4,10 @@ import type { WorkoutInterval, WorkoutIntervalType } from "@/lib/supabase/types"
 interface IntervalEditorProps {
   intervals: WorkoutInterval[];
   onChange: (intervals: WorkoutInterval[]) => void;
+  /** FC máxima do aluno (medida ou estimada pela fórmula de Tanaka), usada
+   * só para sugerir o campo "FC alvo" de cada bloco — o treinador decide
+   * se usa, edita ou deixa em branco. */
+  suggestedHrMaxBpm?: number | null;
 }
 
 export const TYPE_LABELS: Record<WorkoutIntervalType, string> = {
@@ -50,7 +54,7 @@ const EMPTY_INTERVAL: WorkoutInterval = {
  * the %FTP range automatically, and editing the %FTP directly updates the
  * displayed zone, so there are no two states to keep in sync.
  */
-export function IntervalEditor({ intervals, onChange }: IntervalEditorProps) {
+export function IntervalEditor({ intervals, onChange, suggestedHrMaxBpm }: IntervalEditorProps) {
   function updateRow(index: number, patch: Partial<WorkoutInterval>) {
     onChange(intervals.map((row, i) => (i === index ? { ...row, ...patch } : row)));
   }
@@ -72,7 +76,7 @@ export function IntervalEditor({ intervals, onChange }: IntervalEditorProps) {
           return (
             <div
               key={index}
-              className="grid grid-cols-2 gap-4 rounded-2xl border border-g4-border bg-g4-surface-alt/60 p-4 shadow-sm lg:grid-cols-[1.1fr_0.85fr_1.15fr_0.85fr_0.85fr_auto] lg:items-end"
+              className="grid grid-cols-2 gap-4 rounded-2xl border border-g4-border bg-g4-surface-alt/60 p-4 shadow-sm lg:grid-cols-[1.1fr_0.85fr_1.15fr_0.85fr_0.85fr_0.95fr_auto] lg:items-end"
             >
               <label className="block">
                 <span className={miniLabelClass}>Tipo</span>
@@ -142,6 +146,29 @@ export function IntervalEditor({ intervals, onChange }: IntervalEditorProps) {
                   onChange={(e) => updateRow(index, { targetHighPct: Number(e.target.value) })}
                   className={fieldClass}
                 />
+              </label>
+
+              <label className="block">
+                <span className={miniLabelClass}>FC alvo (bpm)</span>
+                <input
+                  type="number"
+                  min={0}
+                  value={row.targetHrBpm ?? ""}
+                  onChange={(e) =>
+                    updateRow(index, { targetHrBpm: e.target.value === "" ? null : Number(e.target.value) })
+                  }
+                  placeholder={suggestedHrMaxBpm ? String(suggestedHrMaxBpm) : "opcional"}
+                  className={fieldClass}
+                />
+                {suggestedHrMaxBpm != null && row.targetHrBpm == null && (
+                  <button
+                    type="button"
+                    onClick={() => updateRow(index, { targetHrBpm: suggestedHrMaxBpm })}
+                    className="mt-1 text-[11px] text-lime-deep underline-offset-2 hover:underline"
+                  >
+                    usar estimativa ({suggestedHrMaxBpm})
+                  </button>
+                )}
               </label>
 
               <button
