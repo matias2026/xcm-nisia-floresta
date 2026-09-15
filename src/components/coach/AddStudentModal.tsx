@@ -3,6 +3,7 @@
 import { useState, type FormEvent } from "react";
 import { Button } from "@/components/ui/Button";
 import type { BodyComposition, CyclingProfile, MockStudent, RunningProfile, StrengthGoal, StrengthProfile, StudentSex } from "@/lib/mock-data";
+import { estimateMaxHeartRate } from "@/lib/workout-metrics";
 
 interface AddStudentModalProps {
   open: boolean;
@@ -146,6 +147,9 @@ export function AddStudentModal({ open, onClose, onAddStudent }: AddStudentModal
   const ftpNum = Number(cycling.ftpWatts);
   const weightNum = Number(general.weightKg);
   const wattsPerKg = ftpNum > 0 && weightNum > 0 ? (ftpNum / weightNum).toFixed(2) : null;
+
+  const ageNum = Number(general.age);
+  const estimatedHrMax = ageNum > 0 ? estimateMaxHeartRate(ageNum) : null;
 
   function patchGeneral(patch: Partial<GeneralFields>) {
     setGeneral((prev) => ({ ...prev, ...patch }));
@@ -469,7 +473,18 @@ export function AddStudentModal({ open, onClose, onAddStudent }: AddStudentModal
                 </label>
                 <div />
                 <label className="block">
-                  <span className={labelClass}>FC máxima</span>
+                  <span className={labelClass}>
+                    FC máxima
+                    {estimatedHrMax && !cycling.hrMax && (
+                      <button
+                        type="button"
+                        onClick={() => patchCycling({ hrMax: String(estimatedHrMax) })}
+                        className="ml-2 text-lime-deep underline-offset-2 hover:underline"
+                      >
+                        usar estimativa pela idade ({estimatedHrMax})
+                      </button>
+                    )}
+                  </span>
                   <input
                     type="number"
                     min={0}
@@ -576,7 +591,18 @@ export function AddStudentModal({ open, onClose, onAddStudent }: AddStudentModal
                   />
                 </label>
                 <label className="block">
-                  <span className={labelClass}>FC máxima</span>
+                  <span className={labelClass}>
+                    FC máxima
+                    {estimatedHrMax && !running.hrMax && (
+                      <button
+                        type="button"
+                        onClick={() => patchRunning({ hrMax: String(estimatedHrMax) })}
+                        className="ml-2 text-lime-deep underline-offset-2 hover:underline"
+                      >
+                        usar estimativa pela idade ({estimatedHrMax})
+                      </button>
+                    )}
+                  </span>
                   <input
                     type="number"
                     min={0}
