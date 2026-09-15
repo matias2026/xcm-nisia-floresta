@@ -28,7 +28,8 @@ export function RequestAccessForm() {
       <Card className="w-full max-w-sm p-6 text-center">
         <h1 className="text-lg font-bold text-g4-ink">Pedido enviado!</h1>
         <p className="mt-2 text-sm text-g4-muted">
-          O treinador vai revisar seu pedido e te avisar por fora (WhatsApp/e-mail) quando sua conta estiver pronta.
+          O treinador vai revisar seu pedido e te avisar por fora (WhatsApp/e-mail) quando sua conta estiver pronta —
+          já com a senha que você acabou de criar.
         </p>
       </Card>
     );
@@ -84,6 +85,18 @@ export function RequestAccessForm() {
             type="email"
             name="email"
             required
+            className="rounded-xl border border-g4-border bg-white px-3 py-2.5 text-sm text-g4-ink focus-ring"
+          />
+        </label>
+
+        <label className="flex flex-col gap-4 text-sm">
+          <span className="font-medium text-g4-ink">Senha</span>
+          <input
+            type="password"
+            name="password"
+            required
+            minLength={8}
+            placeholder="mín. 8 caracteres"
             className="rounded-xl border border-g4-border bg-white px-3 py-2.5 text-sm text-g4-ink focus-ring"
           />
         </label>

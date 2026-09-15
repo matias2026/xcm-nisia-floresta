@@ -132,6 +132,7 @@ export interface Database {
           weight_kg: number | null;
           height_cm: number | null;
           medical_notes: string | null;
+          password: string | null;
         };
         Insert: {
           id?: string;
@@ -148,6 +149,7 @@ export interface Database {
           weight_kg?: number | null;
           height_cm?: number | null;
           medical_notes?: string | null;
+          password?: string | null;
         };
         Update: Partial<Database["public"]["Tables"]["access_requests"]["Insert"]>;
         Relationships: [];

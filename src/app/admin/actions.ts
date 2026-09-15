@@ -125,17 +125,21 @@ export interface ApproveRequestResult {
   password: string | null;
 }
 
-// Approves a /solicitar-acesso request: creates the real account with a
-// temporary password generated here — there's no email sending in the
-// app, so the password comes back only once in this response for the
-// admin to pass along another way (WhatsApp etc).
+// Approves a /solicitar-acesso request: creates the real account using
+// the password the person set for themselves when they submitted the
+// request (access_requests.password) — the admin never sees or chooses
+// it. Old pending requests from before this existed have no password
+// saved; those still get a temporary one generated here, shown once for
+// the admin to pass along another way (WhatsApp etc).
 export async function approveRequest(requestId: string): Promise<ApproveRequestResult> {
   const adminId = await requireAdmin();
   const admin = createAdminClient();
 
   const { data: reqRow } = await admin
     .from("access_requests")
-    .select("id, full_name, email, role_requested, status, birth_date, weight_kg, height_cm, medical_notes")
+    .select(
+      "id, full_name, email, role_requested, status, password, birth_date, weight_kg, height_cm, medical_notes"
+    )
     .eq("id", requestId)
     .single();
 
@@ -143,11 +147,12 @@ export async function approveRequest(requestId: string): Promise<ApproveRequestR
     return { error: "Pedido não encontrado ou já processado.", password: null };
   }
 
-  const password = randomBytes(9).toString("base64url");
+  const ownPassword = reqRow.password?.trim();
+  const generatedPassword = ownPassword ? null : randomBytes(9).toString("base64url");
 
   const error = await createAccountCore({
     email: reqRow.email,
-    password,
+    password: ownPassword || generatedPassword!,
     fullName: reqRow.full_name,
     role: reqRow.role_requested,
     age: reqRow.birth_date ? calculateAge(reqRow.birth_date) : null,
@@ -158,13 +163,19 @@ export async function approveRequest(requestId: string): Promise<ApproveRequestR
 
   if (error) return { error, password: null };
 
+  // Nunca deixa a senha em texto puro no banco depois de usada.
   await admin
     .from("access_requests")
-    .update({ status: "approved", reviewed_by: adminId, reviewed_at: new Date().toISOString() })
+    .update({
+      status: "approved",
+      reviewed_by: adminId,
+      reviewed_at: new Date().toISOString(),
+      password: null,
+    })
     .eq("id", requestId);
 
   revalidatePath("/admin");
-  return { error: null, password };
+  return { error: null, password: generatedPassword };
 }
 
 // Denies a request — just marks it as denied, doesn't create anything.
