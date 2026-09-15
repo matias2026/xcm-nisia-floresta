@@ -15,46 +15,63 @@ const SITE_KEY = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
 
 type RequestRole = "athlete" | "coach";
 
-// Anamnese por checkbox — mais rápido pra preencher no celular do que
-// digitar. "Nenhuma" e "Outra" são mutuamente exclusivas com a lista;
-// "Outra" libera um campo curto só pra quando não cabe nas opções.
-const NONE_OPTION = "Nenhuma dessas";
-const OTHER_OPTION = "Outra";
-const MEDICAL_CONDITIONS = [
-  "Hipertensão",
-  "Diabetes",
-  "Problema cardíaco",
-  "Asma / problema respiratório",
-  "Dor crônica no joelho",
-  "Dor crônica na coluna/lombar",
-  "Dor crônica no ombro",
-  "Dor crônica no quadril ou tornozelo",
-];
+// PAR-Q (Physical Activity Readiness Questionnaire) — questionário
+// padrão de triagem pré-atividade física, desenvolvido pela CSEP
+// (Canadian Society for Exercise Physiology) e adotado no Brasil como
+// referência por academias/personal trainers (citado na Lei 15.681/13
+// do Ceará sobre avaliação física em academias). São 7 perguntas
+// objetivas de sim/não — "sim" em qualquer uma indica que a pessoa deve
+// conversar com um médico antes de aumentar o nível de atividade física.
+// Prefere isso a uma lista solta de doenças: é o que treinador/academia
+// já espera ver, e cada pergunta liga direto a uma decisão de segurança
+// (precisa de liberação médica ou não), não só um catálogo de histórico.
+const PARQ_QUESTIONS = [
+  {
+    id: "heart",
+    text: "Algum médico já disse que você tem um problema de coração e recomendou atividade física só com acompanhamento médico?",
+  },
+  {
+    id: "chest_pain_activity",
+    text: "Você sente dor no peito quando pratica atividade física?",
+  },
+  {
+    id: "chest_pain_rest",
+    text: "No último mês, sentiu dor no peito mesmo sem estar se exercitando?",
+  },
+  {
+    id: "balance",
+    text: "Você perde o equilíbrio por tontura ou já perdeu a consciência?",
+  },
+  {
+    id: "bone_joint",
+    text: "Tem algum problema ósseo ou articular que pode piorar com o exercício (ex.: joelho, coluna, ombro)?",
+    revealsLocation: true,
+  },
+  {
+    id: "bp_medication",
+    text: "Toma remédio controlado para pressão arterial ou para o coração?",
+  },
+  {
+    id: "other",
+    text: "Sabe de algum outro motivo pelo qual não deveria fazer atividade física sem acompanhamento?",
+  },
+] as const;
 
 export function RequestAccessForm() {
   const [state, formAction, pending] = useActionState(submitAccessRequest, initialState);
   const [role, setRole] = useState<RequestRole>("athlete");
   const [birthDate, setBirthDate] = useState("");
-  const [conditions, setConditions] = useState<string[]>([]);
-  const [otherText, setOtherText] = useState("");
+  const [parqAnswers, setParqAnswers] = useState<Record<string, boolean>>({});
+  const [boneJointLocation, setBoneJointLocation] = useState("");
 
   const estimatedHrMax =
     birthDate && !Number.isNaN(Date.parse(birthDate)) ? estimateMaxHeartRate(calculateAge(birthDate)) : null;
 
-  function toggleCondition(option: string) {
-    setConditions((prev) => {
-      if (option === NONE_OPTION) return prev.includes(NONE_OPTION) ? [] : [NONE_OPTION];
-      const withoutNone = prev.filter((c) => c !== NONE_OPTION);
-      return withoutNone.includes(option) ? withoutNone.filter((c) => c !== option) : [...withoutNone, option];
-    });
-  }
+  const anyParqYes = Object.values(parqAnswers).some(Boolean);
 
-  const medicalNotes = conditions.includes(NONE_OPTION)
-    ? ""
-    : conditions
-        .map((c) => (c === OTHER_OPTION ? (otherText.trim() ? `Outra: ${otherText.trim()}` : null) : c))
-        .filter((c): c is string => c !== null)
-        .join("; ");
+  const medicalNotes = PARQ_QUESTIONS.filter((q) => parqAnswers[q.id])
+    .map((q) => (q.id === "bone_joint" && boneJointLocation.trim() ? `${q.text} (${boneJointLocation.trim()})` : q.text))
+    .join("; ");
 
   if (state.success) {
     return (
@@ -185,43 +202,38 @@ export function RequestAccessForm() {
             </div>
 
             <div className="flex flex-col gap-4 text-sm">
-              <span className="font-medium text-g4-ink">Anamnese — doenças ou dores crônicas</span>
+              <span className="font-medium text-g4-ink">Anamnese (PAR-Q) — marque o que for &ldquo;sim&rdquo;</span>
               <input type="hidden" name="medical_notes" value={medicalNotes} />
-              <div className="grid grid-cols-2 gap-x-4 gap-y-4 rounded-xl border border-g4-border bg-white p-3">
-                {MEDICAL_CONDITIONS.map((option) => (
-                  <label key={option} className="flex items-center gap-4 text-sm text-g4-ink">
-                    <input
-                      type="checkbox"
-                      checked={conditions.includes(option)}
-                      onChange={() => toggleCondition(option)}
-                    />
-                    {option}
-                  </label>
+              <div className="flex flex-col divide-y divide-g4-border rounded-xl border border-g4-border bg-white">
+                {PARQ_QUESTIONS.map((q) => (
+                  <div key={q.id} className="p-3">
+                    <label className="flex items-start gap-4 text-sm text-g4-ink">
+                      <input
+                        type="checkbox"
+                        className="mt-0.5"
+                        checked={!!parqAnswers[q.id]}
+                        onChange={() =>
+                          setParqAnswers((prev) => ({ ...prev, [q.id]: !prev[q.id] }))
+                        }
+                      />
+                      {q.text}
+                    </label>
+                    {q.id === "bone_joint" && parqAnswers[q.id] && (
+                      <input
+                        value={boneJointLocation}
+                        onChange={(e) => setBoneJointLocation(e.target.value)}
+                        placeholder="Onde? Ex.: joelho direito"
+                        className="mt-2 ml-8 w-[calc(100%-2rem)] rounded-xl border border-g4-border bg-white px-3 py-2 text-sm text-g4-ink focus-ring"
+                      />
+                    )}
+                  </div>
                 ))}
-                <label className="flex items-center gap-4 text-sm text-g4-ink">
-                  <input
-                    type="checkbox"
-                    checked={conditions.includes(OTHER_OPTION)}
-                    onChange={() => toggleCondition(OTHER_OPTION)}
-                  />
-                  {OTHER_OPTION}
-                </label>
-                <label className="col-span-2 flex items-center gap-4 border-t border-g4-border pt-3 text-sm text-g4-ink">
-                  <input
-                    type="checkbox"
-                    checked={conditions.includes(NONE_OPTION)}
-                    onChange={() => toggleCondition(NONE_OPTION)}
-                  />
-                  {NONE_OPTION}
-                </label>
               </div>
-              {conditions.includes(OTHER_OPTION) && (
-                <input
-                  value={otherText}
-                  onChange={(e) => setOtherText(e.target.value)}
-                  placeholder="Qual?"
-                  className="rounded-xl border border-g4-border bg-white px-3 py-2.5 text-sm text-g4-ink focus-ring"
-                />
+              {anyParqYes && (
+                <p className="text-xs text-g4-muted">
+                  Marcar &ldquo;sim&rdquo; em qualquer pergunta não te impede de criar a conta — é só uma indicação pro
+                  treinador conversar com você antes de aumentar a intensidade dos treinos.
+                </p>
               )}
             </div>
           </>
