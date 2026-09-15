@@ -35,6 +35,9 @@ interface CreateAccountInput {
   password: string;
   fullName: string;
   role: ProfileRole;
+  age?: number | null;
+  weightKg?: number | null;
+  medicalNotes?: string;
 }
 
 // Logic shared by "Create account" (direct form) and "Approve"
@@ -47,6 +50,9 @@ async function createAccountCore({
   password: rawPassword,
   fullName,
   role,
+  age,
+  weightKg,
+  medicalNotes,
 }: CreateAccountInput): Promise<string | null> {
   const password = rawPassword.trim();
   if (!email || !password || !fullName) return "Preencha nome, e-mail e senha.";
@@ -80,6 +86,24 @@ async function createAccountCore({
       : profileError.message;
   }
 
+  // Aluno: já cria a ficha básica (idade, peso, anamnese) com o que foi
+  // coletado na hora da conta — o treinador completa o resto (modalidade,
+  // FTP, FC, cadência etc.) depois pelo Cockpit.
+  if (role === "athlete") {
+    const { error: alunoError } = await admin.from("alunos").insert({
+      user_id: created.user.id,
+      nome: fullName,
+      age: age ?? null,
+      peso: weightKg ?? null,
+      medical_notes: medicalNotes?.trim() ?? "",
+    });
+
+    if (alunoError) {
+      await admin.auth.admin.deleteUser(created.user.id);
+      return alunoError.message;
+    }
+  }
+
   return null;
 }
 
@@ -96,8 +120,19 @@ export async function createAccount(
   const password = String(formData.get("password") ?? "").trim();
   const fullName = String(formData.get("full_name") ?? "").trim();
   const role = String(formData.get("role") ?? "") as ProfileRole;
+  const ageRaw = String(formData.get("age") ?? "").trim();
+  const weightRaw = String(formData.get("weight_kg") ?? "").trim();
+  const medicalNotes = String(formData.get("medical_notes") ?? "").trim();
 
-  const error = await createAccountCore({ email, password, fullName, role });
+  const error = await createAccountCore({
+    email,
+    password,
+    fullName,
+    role,
+    age: ageRaw ? Number(ageRaw) : null,
+    weightKg: weightRaw ? Number(weightRaw) : null,
+    medicalNotes,
+  });
   if (error) return { ...initialState, error };
 
   revalidatePath("/admin");

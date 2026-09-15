@@ -54,6 +54,8 @@ export interface Database {
           altura: number | null;
           user_id: string | null;
           created_at: string;
+          age: number | null;
+          medical_notes: string;
         };
         Insert: {
           id?: string;
@@ -65,6 +67,8 @@ export interface Database {
           altura?: number | null;
           user_id?: string | null;
           created_at?: string;
+          age?: number | null;
+          medical_notes?: string;
         };
         Update: Partial<Database["public"]["Tables"]["alunos"]["Insert"]>;
         Relationships: [];
